@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nyay — AI Legal Advisor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold:#C9A84C; --gold-light:#E8C97A; --gold-dim:#8a6f30;
+      --navy:#0D1B2A; --navy-mid:#132338; --navy-light:#1C3252;
+      --navy-border:#1f3a57; --cream:#F5F0E8; --cream-dim:#d8d1c4;
+      --text-main:#EAE4D8; --text-muted:#8899aa;
+      --font-display:'Cormorant Garamond',Georgia,serif;
+      --font-body:'DM Sans',sans-serif; --radius:8px;
+    }
+    html.light {
+      --navy:#F4F1EB; --navy-mid:#EDE8DF; --navy-light:#E2DBD0;
+      --navy-border:#C8BFB0; --text-main:#1A1A1A; --text-muted:#6B6B6B;
+      --cream:#2C2C2C; --cream-dim:#4A4A4A; --gold:#8a6500;
+      --gold-light:#a07800; --gold-dim:#b8960a;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-body);background:var(--navy);color:var(--text-main);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+    header{background:linear-gradient(135deg,var(--navy-mid),var(--navy-light));border-bottom:1px solid var(--gold-dim);padding:0 20px;height:62px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;z-index:20;}
+    header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--gold-light),var(--gold),transparent);}
+    .logo-group{display:flex;align-items:center;gap:10px;}
+    .logo-emblem{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gold-dim),var(--gold));display:flex;align-items:center;justify-content:center;font-size:17px;}
+    .logo-text h1{font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:var(--gold-light);letter-spacing:2px;}
+    .logo-text p{font-size:0.62rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;}
+    .header-right{display:flex;align-items:center;gap:10px;}
+    .user-pill{background:rgba(201,168,76,0.1);border:1px solid var(--gold-dim);color:var(--gold);font-size:0.72rem;padding:4px 12px;border-radius:20px;}
+    .hdr-btn{background:transparent;border:1px solid var(--navy-border);color:var(--text-muted);font-family:var(--font-body);font-size:0.75rem;padding:6px 12px;border-radius:var(--radius);cursor:pointer;transition:all 0.2s;}
+    .hdr-btn:hover{border-color:var(--gold-dim);color:var(--gold);}
+    #themeBtn{width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:14px;}
+    .main-layout{display:flex;flex:1;overflow:hidden;}
+    .sidebar{width:280px;flex-shrink:0;background:var(--navy-mid);border-right:1px solid var(--navy-border);display:flex;flex-direction:column;overflow:hidden;}
+    .sidebar-top{padding:14px 14px 10px;border-bottom:1px solid var(--navy-border);}
+    .new-chat-btn{width:100%;background:linear-gradient(135deg,var(--gold-dim),var(--gold));border:none;border-radius:var(--radius);padding:10px;color:var(--navy);font-family:var(--font-body);font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:10px;}
+    .new-chat-btn:hover{background:linear-gradient(135deg,var(--gold),var(--gold-light));}
+    .search-box{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--navy-border);border-radius:var(--radius);padding:8px 12px;color:var(--text-main);font-family:var(--font-body);font-size:0.8rem;outline:none;transition:border-color 0.2s;}
+    .search-box:focus{border-color:var(--gold-dim);}
+    .search-box::placeholder{color:var(--text-muted);}
+    .conv-list{flex:1;overflow-y:auto;padding:8px;}
+    .conv-list::-webkit-scrollbar{width:4px;}
+    .conv-list::-webkit-scrollbar-thumb{background:var(--navy-border);border-radius:2px;}
+    .conv-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--radius);cursor:pointer;transition:all 0.15s;border:1px solid transparent;margin-bottom:2px;position:relative;}
+    .conv-item:hover{background:rgba(255,255,255,0.05);border-color:var(--navy-border);}
+    .conv-item.active{background:rgba(201,168,76,0.1);border-color:var(--gold-dim);}
+    .conv-item .conv-icon{font-size:14px;flex-shrink:0;opacity:0.7;}
+    .conv-item .conv-info{flex:1;min-width:0;}
+    .conv-item .conv-title{font-size:0.8rem;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .conv-item .conv-date{font-size:0.68rem;color:var(--text-muted);margin-top:1px;}
+    .conv-item .del-btn{opacity:0;background:transparent;border:none;color:#e57368;cursor:pointer;font-size:14px;padding:2px 4px;border-radius:4px;transition:all 0.15s;flex-shrink:0;}
+    .conv-item:hover .del-btn{opacity:1;}
+    .empty-convs{text-align:center;padding:32px 16px;color:var(--text-muted);font-size:0.8rem;line-height:1.6;}
+    .chat-wrapper{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    #chatBox{flex:1;overflow-y:auto;padding:24px 28px;display:flex;flex-direction:column;gap:18px;scroll-behavior:smooth;}
+    #chatBox::-webkit-scrollbar{width:5px;}
+    #chatBox::-webkit-scrollbar-thumb{background:var(--navy-border);border-radius:3px;}
+    .welcome-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;gap:10px;}
+    .welcome-state .emblem{font-size:48px;margin-bottom:6px;}
+    .welcome-state h2{font-family:var(--font-display);font-size:1.8rem;color:var(--gold-light);}
+    .welcome-state p{color:var(--text-muted);font-size:0.86rem;max-width:360px;line-height:1.6;}
+    .quick-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px;max-width:520px;}
+    .chip{background:rgba(201,168,76,0.08);border:1px solid var(--gold-dim);color:var(--gold-light);font-family:var(--font-body);font-size:0.75rem;padding:6px 14px;border-radius:20px;cursor:pointer;transition:all 0.2s;}
+    .chip:hover{background:rgba(201,168,76,0.16);}
+    .message{display:flex;gap:10px;max-width:780px;animation:slideUp 0.25s ease forwards;opacity:0;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+    .message.user{align-self:flex-end;flex-direction:row-reverse;}
+    .avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px;}
+    .message.user .avatar{background:linear-gradient(135deg,var(--navy-light),var(--navy-border));border:1px solid var(--gold-dim);}
+    .message.assistant .avatar{background:linear-gradient(135deg,var(--gold-dim),var(--gold));}
+    .bubble{padding:12px 16px;border-radius:12px;font-size:0.86rem;line-height:1.75;max-width:calc(100% - 44px);}
+    .message.user .bubble{background:linear-gradient(135deg,var(--navy-light),#1a3d62);border:1px solid var(--navy-border);border-top-right-radius:4px;color:var(--cream);}
+    .message.assistant .bubble{background:linear-gradient(135deg,var(--navy-mid),#162d47);border:1px solid var(--navy-border);border-top-left-radius:4px;}
+    .bubble strong{color:var(--gold-light);font-weight:600;}
+    .bubble em{color:var(--cream-dim);font-style:italic;}
+    .typing-indicator{display:flex;align-items:center;gap:5px;padding:12px 16px;background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:12px;border-top-left-radius:4px;width:fit-content;}
+    .typing-indicator span{display:inline-block;width:6px;height:6px;background:var(--gold-dim);border-radius:50%;animation:bounce 1.2s infinite;}
+    .typing-indicator span:nth-child(2){animation-delay:0.2s;}
+    .typing-indicator span:nth-child(3){animation-delay:0.4s;}
+    @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:0.5;}30%{transform:translateY(-5px);opacity:1;}}
+    .input-bar{padding:14px 28px 18px;background:linear-gradient(0deg,var(--navy-mid),var(--navy));border-top:1px solid var(--navy-border);flex-shrink:0;}
+    .input-inner{display:flex;gap:8px;align-items:flex-end;max-width:780px;margin:0 auto;background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:12px;padding:9px 9px 9px 14px;transition:border-color 0.2s;}
+    .input-inner:focus-within{border-color:var(--gold-dim);box-shadow:0 0 0 3px rgba(201,168,76,0.07);}
+    #userInput{flex:1;background:transparent;border:none;outline:none;color:var(--text-main);font-family:var(--font-body);font-size:0.86rem;line-height:1.6;resize:none;min-height:22px;max-height:120px;overflow-y:auto;padding:2px 0;}
+    #userInput::placeholder{color:var(--text-muted);}
+    #sendBtn{background:linear-gradient(135deg,var(--gold-dim),var(--gold));border:none;color:var(--navy);width:34px;height:34px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.2s;flex-shrink:0;}
+    #sendBtn:hover:not(:disabled){transform:scale(1.05);}
+    #sendBtn:disabled{opacity:0.4;cursor:not-allowed;}
+    .input-hint{text-align:center;font-size:0.66rem;color:#2a3f52;margin-top:6px;}
+    html.light .search-box{background:#fff;border-color:var(--navy-border);color:#1A1A1A;}
+    html.light .input-inner{background:#fff;border-color:var(--navy-border);}
+    html.light #userInput{color:#1A1A1A;}
+    html.light .conv-item:hover{background:rgba(0,0,0,0.04);}
+    html.light .conv-item.active{background:rgba(138,101,0,0.08);}
+    html.light .typing-indicator{background:#fff;}
+    html.light .input-bar{background:linear-gradient(0deg,#EDE8DF,#F4F1EB);}
+    html.light header{background:linear-gradient(135deg,#E8E2D8,#DDD6CB);}
+    @media(max-width:768px){.sidebar{display:none;}#chatBox{padding:14px;}.input-bar{padding:10px 14px 14px;}}
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-group">
+      <div class="logo-emblem">⚖️</div>
+      <div class="logo-text">
+        <h1>NYAY</h1>
+        <p>AI Legal Advisor · India</p>
+      </div>
+    </div>
+    <div class="header-right">
+      {# Django template variable — passed from views.py render() context #}
+      <span class="user-pill">👤 {{ user_name }}</span>
+      <span class="user-pill" id="msgCounter" style="display:none">0 exchanges</span>
+      <button class="hdr-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      {# Django {% url %} tag generates the correct URL for the 'logout' view #}
+      <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="hdr-btn">Sign Out</button>
+      </form>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <button class="new-chat-btn" onclick="newChat()">＋ New Conversation</button>
+        <input class="search-box" id="searchBox" placeholder="🔍 Search conversations..."
+               oninput="searchConversations(this.value)"/>
+      </div>
+      <div class="conv-list" id="convList">
+        <div class="empty-convs">No conversations yet.<br>Start a new chat!</div>
+      </div>
+    </aside>
+
+    <div class="chat-wrapper">
+      <div id="chatBox">
+        <div class="welcome-state" id="welcomeState">
+          <div class="emblem">⚖️</div>
+          {# Django template filter — split on space, get first word #}
+          <h2>Namaste, {{ user_name|truncatewords:1 }}!</h2>
+          <p>Ask me anything about Indian law — IPC, CrPC, your rights, court procedures, property, consumer rights and more.</p>
+          <div class="quick-chips">
+            <button class="chip" onclick="useChip(this)">Rights if arrested?</button>
+            <button class="chip" onclick="useChip(this)">What is IPC 420?</button>
+            <button class="chip" onclick="useChip(this)">How to file FIR?</button>
+            <button class="chip" onclick="useChip(this)">Article 21 rights</button>
+            <button class="chip" onclick="useChip(this)">Consumer complaint steps</button>
+            <button class="chip" onclick="useChip(this)">Cheque bounce Section 138</button>
+          </div>
+        </div>
+      </div>
+      <div class="input-bar">
+        <div class="input-inner">
+          <textarea id="userInput" rows="1" placeholder="Ask your legal question..."
+                    onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button id="sendBtn" onclick="sendMessage()">➤</button>
+        </div>
+        <p class="input-hint">Enter to send · Shift+Enter for new line · Context memory ON</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Django passes Python variables into JS using template tags ──
+    // {{ active_conv_id|default:'null' }} renders as either a number or 'null'
+    let activeConvId  = {{ active_conv_id|default:'null' }};
+    let exchangeCount = 0;
+    let searchTimer   = null;
+
+    // Django CSRF token — required on all POST/DELETE requests
+    function getCookie(name) {
+      const val = document.cookie.split('; ').find(r => r.startsWith(name + '='));
+      return val ? decodeURIComponent(val.split('=')[1]) : '';
+    }
+    const CSRF = getCookie('csrftoken');
+
+    // ── THEME ──
+    function toggleTheme() {
+      const isLight = document.documentElement.classList.toggle('light');
+      document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+      localStorage.setItem('nyay-theme', isLight ? 'light' : 'dark');
+    }
+    (function() {
+      if (localStorage.getItem('nyay-theme') === 'light') {
+        document.documentElement.classList.add('light');
+        window.addEventListener('DOMContentLoaded', () => {
+          document.getElementById('themeBtn').textContent = '☀️';
+        });
+      }
+    })();
+
+    // ── HELPERS ──
+    function autoResize(el) { el.style.height='auto'; el.style.height=el.scrollHeight+'px'; }
+    function handleKey(e)   { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
+    function useChip(btn)   { document.getElementById('userInput').value=btn.textContent; sendMessage(); }
+    function formatDate(dateStr) {
+      const d=new Date(dateStr), now=new Date(), diff=(now-d)/1000;
+      if(diff<60)    return 'Just now';
+      if(diff<3600)  return Math.floor(diff/60)+'m ago';
+      if(diff<86400) return Math.floor(diff/3600)+'h ago';
+      return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+    }
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── CONVERSATIONS ──
+    // Django URL: {% url 'api_conversations' %} renders as /api/conversations/
+    async function loadConversations(search='') {
+      const url  = "{% url 'api_conversations' %}" + (search?`?search=${encodeURIComponent(search)}`:'');
+      const res  = await fetch(url);
+      const data = await res.json();
+      renderConvList(data.conversations);
+    }
+
+    function renderConvList(convs) {
+      const list = document.getElementById('convList');
+      if(!convs.length){ list.innerHTML='<div class="empty-convs">No conversations found.</div>'; return; }
+      list.innerHTML = convs.map(c=>`
+        <div class="conv-item ${c.id===activeConvId?'active':''}"
+             onclick="openConversation(${c.id})" data-id="${c.id}">
+          <span class="conv-icon">⚖️</span>
+          <div class="conv-info">
+            <div class="conv-title">${escHtml(c.title)}</div>
+            <div class="conv-date">${formatDate(c.updated_at)} · ${c.message_count} msgs</div>
+          </div>
+          <button class="del-btn" onclick="deleteConv(event,${c.id})" title="Delete">🗑</button>
+        </div>`).join('');
+    }
+
+    function searchConversations(val) {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(()=>loadConversations(val), 300);
+    }
+
+    function newChat() {
+      activeConvId = null; exchangeCount = 0;
+      document.getElementById('msgCounter').style.display = 'none';
+      document.getElementById('chatBox').innerHTML = `
+        <div class="welcome-state" id="welcomeState">
+          <div class="emblem">⚖️</div>
+          <h2>New Conversation</h2>
+          <p>Ask me anything about Indian law.</p>
+          <div class="quick-chips">
+            <button class="chip" onclick="useChip(this)">Rights if arrested?</button>
+            <button class="chip" onclick="useChip(this)">What is IPC 420?</button>
+            <button class="chip" onclick="useChip(this)">How to file FIR?</button>
+            <button class="chip" onclick="useChip(this)">Article 21 rights</button>
+          </div>
+        </div>`;
+      document.querySelectorAll('.conv-item').forEach(el=>el.classList.remove('active'));
+      document.getElementById('userInput').focus();
+    }
+
+    async function openConversation(convId) {
+      activeConvId = convId;
+      document.querySelectorAll('.conv-item').forEach(el=>{
+        el.classList.toggle('active', parseInt(el.dataset.id)===convId);
+      });
+      // Django URL pattern: /api/conversations/123/
+      const res  = await fetch(`{% url 'api_conversations' %}${convId}/`);
+      const data = await res.json();
+      if(data.error) return;
+      document.getElementById('chatBox').innerHTML='';
+      data.messages.forEach(m=>appendMessage(m.role, m.content));
+      exchangeCount = Math.floor(data.messages.length/2);
+      updateCounter();
+    }
+
+    async function deleteConv(e, convId) {
+      e.stopPropagation();
+      if(!confirm('Delete this conversation? This cannot be undone.')) return;
+      await fetch(`{% url 'api_conversations' %}${convId}/`, {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': CSRF }   // ← Django CSRF required on DELETE too
+      });
+      if(convId===activeConvId) newChat();
+      loadConversations();
+    }
+
+    // ── SEND MESSAGE ──
+    async function sendMessage() {
+      const input   = document.getElementById('userInput');
+      const message = input.value.trim();
+      if(!message) return;
+      const welcome = document.getElementById('welcomeState');
+      if(welcome) welcome.remove();
+      input.value=''; input.style.height='auto';
+      document.getElementById('sendBtn').disabled = true;
+      appendMessage('user', message);
+      const typingId = showTyping();
+
+      try {
+        const res  = await fetch("{% url 'api_chat' %}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken':  CSRF     // ← Every Django POST needs this
+          },
+          body: JSON.stringify({ message, conversation_id: activeConvId })
+        });
+        const data = await res.json();
+        removeTyping(typingId);
+        if(data.error) {
+          appendMessage('assistant', '⚠️ '+data.error);
+        } else {
+          appendMessage('assistant', data.reply);
+          activeConvId  = data.conversation_id;
+          exchangeCount = Math.floor(data.message_count/2);
+          updateCounter();
+          loadConversations();
+          setTimeout(()=>{
+            document.querySelectorAll('.conv-item').forEach(el=>{
+              el.classList.toggle('active', parseInt(el.dataset.id)===activeConvId);
+            });
+          }, 300);
+        }
+      } catch(err) {
+        removeTyping(typingId);
+        appendMessage('assistant','⚠️ Could not connect. Is Django running?');
+      }
+      document.getElementById('sendBtn').disabled = false;
+      document.getElementById('userInput').focus();
+    }
+
+    function appendMessage(role, text) {
+      const chatBox = document.getElementById('chatBox');
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+      const formatted = text
+        .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g,'<em>$1</em>')
+        .replace(/\n/g,'<br>');
+      div.innerHTML = `<div class="avatar">${role==='user'?'👤':'⚖️'}</div><div class="bubble">${formatted}</div>`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function showTyping() {
+      const chatBox = document.getElementById('chatBox');
+      const id = 'typing-'+Date.now();
+      chatBox.innerHTML += `<div class="message assistant" id="${id}"><div class="avatar">⚖️</div><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+      return id;
+    }
+    function removeTyping(id) { const el=document.getElementById(id); if(el) el.remove(); }
+
+    function updateCounter() {
+      const badge=document.getElementById('msgCounter');
+      badge.style.display='inline';
+      badge.textContent=`${exchangeCount} exchange${exchangeCount!==1?'s':''}`;
+    }
+
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      await loadConversations();
+      if(activeConvId) await openConversation(activeConvId);
+    });
+  </script>
+</body>
+</html>

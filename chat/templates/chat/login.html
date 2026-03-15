@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nyay — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold: #C9A84C; --gold-light: #E8C97A; --gold-dim: #8a6f30;
+      --navy: #0D1B2A; --navy-mid: #132338; --navy-light: #1C3252;
+      --navy-border: #1f3a57; --text-main: #EAE4D8; --text-muted: #8899aa;
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body); background: var(--navy); color: var(--text-main);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(201,168,76,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(201,168,76,0.04) 0%, transparent 50%);
+    }
+    .card {
+      background: var(--navy-mid); border: 1px solid var(--navy-border);
+      border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 420px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5); position: relative; overflow: hidden;
+      animation: fadeUp 0.4s ease forwards;
+    }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+    }
+    .logo { text-align: center; margin-bottom: 32px; }
+    .logo-icon {
+      width: 56px; height: 56px; background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin: 0 auto 12px; box-shadow: 0 0 24px rgba(201,168,76,0.3);
+    }
+    .logo h1 { font-family: var(--font-display); font-size: 2rem; color: var(--gold-light); letter-spacing: 3px; }
+    .logo p  { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 1px; margin-top: 2px; }
+    h2 { font-family: var(--font-display); font-size: 1.4rem; color: var(--text-main); margin-bottom: 24px; font-weight: 600; }
+    .field { margin-bottom: 18px; }
+    label { display: block; font-size: 0.76rem; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+    input {
+      width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--navy-border);
+      border-radius: 8px; padding: 11px 14px; color: var(--text-main);
+      font-family: var(--font-body); font-size: 0.88rem; outline: none; transition: border-color 0.2s;
+    }
+    input:focus { border-color: var(--gold-dim); box-shadow: 0 0 0 3px rgba(201,168,76,0.08); }
+    input::placeholder { color: #3a4f62; }
+    .btn {
+      width: 100%; background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      border: none; border-radius: 8px; padding: 13px; color: var(--navy);
+      font-family: var(--font-body); font-size: 0.92rem; font-weight: 600;
+      cursor: pointer; margin-top: 8px; transition: all 0.2s; letter-spacing: 0.5px;
+    }
+    .btn:hover:not(:disabled) { background: linear-gradient(135deg, var(--gold), var(--gold-light)); transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error-msg {
+      background: rgba(192,57,43,0.12); border: 1px solid rgba(192,57,43,0.3);
+      color: #ff7060; border-radius: 8px; padding: 10px 14px; font-size: 0.82rem;
+      margin-bottom: 16px; display: none;
+    }
+    .divider { border: none; border-top: 1px solid var(--navy-border); margin: 24px 0; }
+    .footer-link { text-align: center; font-size: 0.82rem; color: var(--text-muted); }
+    .footer-link a { color: var(--gold); text-decoration: none; }
+    .footer-link a:hover { color: var(--gold-light); }
+  </style>
+</head>
+<body>
+  {% csrf_token %}
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon">⚖️</div>
+      <h1>NYAY</h1>
+      <p>AI Legal Advisor · India</p>
+    </div>
+
+    <h2>Welcome back</h2>
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter your password"
+             autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()"/>
+    </div>
+
+    <button class="btn" id="loginBtn" onclick="doLogin()">Sign In</button>
+
+    <hr class="divider"/>
+    <div class="footer-link">
+      {# Django template tag — renders the /signup/ URL #}
+      Don't have an account? <a href="{% url 'signup' %}">Create one free</a>
+    </div>
+  </div>
+
+  <script>
+    // Django requires CSRF token on all POST requests
+    // getCookie reads it from the browser cookie Django sets automatically
+    function getCookie(name) {
+      const val = document.cookie.split('; ').find(r => r.startsWith(name + '='));
+      return val ? decodeURIComponent(val.split('=')[1]) : '';
+    }
+
+    async function doLogin() {
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const btn      = document.getElementById('loginBtn');
+      const errMsg   = document.getElementById('errorMsg');
+      errMsg.style.display = 'none';
+
+      if (!email || !password) { showError('Please fill in all fields.'); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+
+      try {
+        // Django note: {% url 'login' %} renders as /login/ at runtime
+        const res  = await fetch("{% url 'login' %}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken':  getCookie('csrftoken'),  // ← Django requires this!
+          },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+          window.location.href = data.redirect;
+        } else {
+          showError(data.error || 'Login failed.');
+        }
+      } catch(e) {
+        showError('Connection error. Is Django running?');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

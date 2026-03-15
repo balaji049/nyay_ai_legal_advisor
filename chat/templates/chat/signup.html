@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nyay — Create Account</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold: #C9A84C; --gold-light: #E8C97A; --gold-dim: #8a6f30;
+      --navy: #0D1B2A; --navy-mid: #132338; --navy-light: #1C3252;
+      --navy-border: #1f3a57; --text-main: #EAE4D8; --text-muted: #8899aa;
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body); background: var(--navy); color: var(--text-main);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background-image:
+        radial-gradient(ellipse at 80% 50%, rgba(201,168,76,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.04) 0%, transparent 50%);
+    }
+    .card {
+      background: var(--navy-mid); border: 1px solid var(--navy-border);
+      border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 420px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5); position: relative; overflow: hidden;
+      animation: fadeUp 0.4s ease forwards;
+    }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+    }
+    .logo { text-align: center; margin-bottom: 32px; }
+    .logo-icon {
+      width: 56px; height: 56px; background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin: 0 auto 12px; box-shadow: 0 0 24px rgba(201,168,76,0.3);
+    }
+    .logo h1 { font-family: var(--font-display); font-size: 2rem; color: var(--gold-light); letter-spacing: 3px; }
+    .logo p  { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 1px; margin-top: 2px; }
+    h2 { font-family: var(--font-display); font-size: 1.4rem; margin-bottom: 24px; font-weight: 600; }
+    .field { margin-bottom: 16px; }
+    label { display: block; font-size: 0.76rem; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+    input {
+      width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--navy-border);
+      border-radius: 8px; padding: 11px 14px; color: var(--text-main);
+      font-family: var(--font-body); font-size: 0.88rem; outline: none; transition: border-color 0.2s;
+    }
+    input:focus { border-color: var(--gold-dim); box-shadow: 0 0 0 3px rgba(201,168,76,0.08); }
+    input::placeholder { color: #3a4f62; }
+    .btn {
+      width: 100%; background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      border: none; border-radius: 8px; padding: 13px; color: var(--navy);
+      font-family: var(--font-body); font-size: 0.92rem; font-weight: 600;
+      cursor: pointer; margin-top: 8px; transition: all 0.2s; letter-spacing: 0.5px;
+    }
+    .btn:hover:not(:disabled) { background: linear-gradient(135deg, var(--gold), var(--gold-light)); transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error-msg   { background: rgba(192,57,43,0.12); border:1px solid rgba(192,57,43,0.3); color:#ff7060; border-radius:8px; padding:10px 14px; font-size:0.82rem; margin-bottom:16px; display:none; }
+    .success-msg { background: rgba(39,174,96,0.12);  border:1px solid rgba(39,174,96,0.3);  color:#2ecc71; border-radius:8px; padding:10px 14px; font-size:0.82rem; margin-bottom:16px; display:none; }
+    .divider { border: none; border-top: 1px solid var(--navy-border); margin: 24px 0; }
+    .footer-link { text-align: center; font-size: 0.82rem; color: var(--text-muted); }
+    .footer-link a { color: var(--gold); text-decoration: none; }
+    .hint { font-size: 0.72rem; color: #3a5068; margin-top: 4px; }
+
+    /* ── DISCLAIMER MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(5,12,20,0.85);
+      backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center;
+      z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--navy-mid); border: 1px solid var(--navy-border);
+      border-radius: 16px; padding: 36px 32px; width: 100%; max-width: 480px; margin: 16px;
+      transform: translateY(24px) scale(0.97); transition: transform 0.3s ease;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6); position: relative;
+    }
+    .modal-overlay.show .modal { transform: translateY(0) scale(1); }
+    .modal::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+    }
+    .modal-icon { text-align: center; font-size: 36px; margin-bottom: 12px; }
+    .modal h3 { font-family: var(--font-display); font-size: 1.4rem; color: var(--gold-light); text-align: center; margin-bottom: 6px; }
+    .modal .subtitle { text-align: center; font-size: 0.76rem; color: var(--text-muted); margin-bottom: 20px; }
+    .disclaimer-box {
+      background: rgba(201,168,76,0.05); border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 10px; padding: 16px 18px; font-size: 0.82rem; color: #b0bec9;
+      line-height: 1.75; max-height: 220px; overflow-y: auto; margin-bottom: 20px;
+    }
+    .disclaimer-box::-webkit-scrollbar { width: 4px; }
+    .disclaimer-box::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
+    .disclaimer-box p { margin-bottom: 10px; }
+    .disclaimer-box p:last-child { margin-bottom: 0; }
+    .disclaimer-box strong { color: var(--gold); }
+    .checkbox-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--navy-border);
+      border-radius: 8px; padding: 12px 14px; margin-bottom: 20px;
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .checkbox-row:hover { border-color: var(--gold-dim); }
+    .checkbox-row input[type="checkbox"] { width:16px; height:16px; min-width:16px; margin-top:1px; cursor:pointer; accent-color:var(--gold); padding:0; }
+    .checkbox-row label { font-size: 0.82rem; color: var(--text-muted); cursor: pointer; line-height: 1.5; text-transform: none; letter-spacing: 0; }
+    .checkbox-row label strong { color: var(--text-main); }
+    .modal-btn {
+      width: 100%; background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      border: none; border-radius: 8px; padding: 13px; color: var(--navy);
+      font-family: var(--font-body); font-size: 0.92rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; opacity: 0.4; pointer-events: none;
+    }
+    .modal-btn.enabled { opacity: 1; pointer-events: all; }
+    .modal-btn.enabled:hover { background: linear-gradient(135deg, var(--gold), var(--gold-light)); transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+  {% csrf_token %}
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon">⚖️</div>
+      <h1>NYAY</h1>
+      <p>AI Legal Advisor · India</p>
+    </div>
+
+    <h2>Create your account</h2>
+    <div class="error-msg"   id="errorMsg"></div>
+    <div class="success-msg" id="successMsg"></div>
+
+    <div class="field">
+      <label>Full Name</label>
+      <input type="text" id="name" placeholder="Rahul Sharma"/>
+    </div>
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="email" placeholder="you@example.com"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Min. 6 characters" onkeydown="if(event.key==='Enter') doSignup()"/>
+      <p class="hint">Must be at least 6 characters</p>
+    </div>
+
+    <button class="btn" id="signupBtn" onclick="doSignup()">Create Account</button>
+
+    <hr class="divider"/>
+    <div class="footer-link">
+      Already have an account? <a href="{% url 'login' %}">Sign in</a>
+    </div>
+  </div>
+
+  <!-- DISCLAIMER MODAL -->
+  <div class="modal-overlay" id="disclaimerModal">
+    <div class="modal">
+      <div class="modal-icon">⚖️</div>
+      <h3>Important Disclaimer</h3>
+      <p class="subtitle">Please read carefully before using Nyay</p>
+      <div class="disclaimer-box">
+        <p><strong>1. Not a Substitute for Legal Advice</strong><br>
+        Nyay is an AI-powered legal information tool. The information provided is for <strong>general educational purposes only</strong> and does not constitute legal advice or create any attorney-client relationship.</p>
+        <p><strong>2. Consult a Qualified Advocate</strong><br>
+        For any specific legal matter, always consult a <strong>qualified advocate registered with the Bar Council of India</strong>. Laws vary by state and circumstance.</p>
+        <p><strong>3. Accuracy & Currency</strong><br>
+        Indian laws are frequently amended. The AI may not always reflect the most recent changes. Always verify critical information from official sources.</p>
+        <p><strong>4. No Liability</strong><br>
+        The creators of Nyay accept no liability for actions taken based on the information provided. Use of this service is entirely at your own risk.</p>
+        <p><strong>5. Confidentiality</strong><br>
+        Do not share sensitive personal information such as Aadhaar numbers, bank details, or confidential case information in your queries.</p>
+        <p><strong>6. Appropriate Use</strong><br>
+        This platform is intended for lawful purposes only. Misuse for illegal activities is strictly prohibited.</p>
+      </div>
+      <div class="checkbox-row" onclick="toggleCheck()">
+        <input type="checkbox" id="agreeCheck" onclick="event.stopPropagation(); toggleCheck()"/>
+        <label for="agreeCheck">
+          <strong>I have read and understood the disclaimer.</strong>
+          I acknowledge that Nyay provides general legal information only and is not a substitute for professional legal advice.
+        </label>
+      </div>
+      <button class="modal-btn" id="proceedBtn" onclick="proceedToDashboard()">
+        Proceed to Dashboard →
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Django CSRF token — required on every POST request
+    function getCookie(name) {
+      const val = document.cookie.split('; ').find(r => r.startsWith(name + '='));
+      return val ? decodeURIComponent(val.split('=')[1]) : '';
+    }
+
+    async function doSignup() {
+      const name     = document.getElementById('name').value.trim();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const btn      = document.getElementById('signupBtn');
+      document.getElementById('errorMsg').style.display   = 'none';
+      document.getElementById('successMsg').style.display = 'none';
+
+      if (!name || !email || !password) { showError('Please fill in all fields.'); return; }
+      if (password.length < 6)          { showError('Password must be at least 6 characters.'); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+
+      try {
+        const res  = await fetch("{% url 'signup' %}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken':  getCookie('csrftoken'),  // ← Django CSRF protection
+          },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          window._redirectAfterDisclaimer = data.redirect;
+          document.getElementById('disclaimerModal').classList.add('show');
+        } else {
+          showError(data.error || 'Signup failed.');
+        }
+      } catch(e) {
+        showError('Connection error. Is Django running?');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Create Account';
+    }
+
+    function toggleCheck() {
+      const isChecked = document.getElementById('agreeCheck').checked;
+      if (event.target !== document.getElementById('agreeCheck')) {
+        document.getElementById('agreeCheck').checked = !isChecked;
+      }
+      document.getElementById('proceedBtn').classList.toggle('enabled',
+        document.getElementById('agreeCheck').checked);
+    }
+
+    function proceedToDashboard() {
+      if (!document.getElementById('agreeCheck').checked) return;
+      document.getElementById('disclaimerModal').style.opacity = '0';
+      setTimeout(() => window.location.href = window._redirectAfterDisclaimer || '/', 300);
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg; el.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
