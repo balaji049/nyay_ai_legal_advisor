@@ -1,235 +1,177 @@
 # ⚖️ NYAY – AI Legal Advisor for India
 
-> AI-powered legal advisor built with Django and Groq LLM that helps users understand Indian laws, rights, and legal procedures through conversational AI with persistent context memory.
+Ever tried Googling a legal question in India and ended up more confused than before? That's exactly why I built NYAY.
+
+Most people can't afford a lawyer for every small doubt — *"Can my landlord do this?"*, *"What are my rights if I get fired?"*, *"Is this contract clause even legal?"*. NYAY gives you a place to ask those questions in plain language and actually get a useful answer.
+
+It's built with Django and powered by Groq's LLaMA model. The big thing that makes it different from just prompting ChatGPT: **it remembers your conversation**. Every message is saved to a database and reloaded before each response, so the AI always has full context — no repeating yourself.
 
 ---
 
-## 📌 Project Overview
+## What it can do
 
-Access to reliable legal information in India is often expensive and difficult for common citizens. Many AI chatbots provide generic answers and forget previous messages, making conversations inconsistent.
-
-**NYAY solves this by:**
-- 🤖 Providing AI-powered legal explanations specialized for Indian law
-- 🧠 Maintaining conversation memory so the AI understands context
-- 💾 Allowing users to save and revisit past conversations
-- 🔐 Using Django's secure authentication and ORM for full-stack development
+- Ask anything about Indian laws, rights, or legal procedures and get a clear explanation
+- Pick up right where you left off — conversations are saved and searchable
+- Works across multiple accounts, each with their own private history
+- Falls back across multiple Groq models automatically if one hits a rate limit
+- Comes with a clean dark/light mode UI and typing indicators so it feels like a real chat
 
 ---
 
-## ✨ Features
+## Tech I used
 
-| Feature | Description |
+| | |
 |---|---|
-| 🤖 AI Legal Q&A | Ask questions about Indian laws, rights, and procedures |
-| 🧠 Persistent Memory | Full conversation history reloaded for context-aware responses |
-| 🔐 User Authentication | Secure signup / login with Django's auth system |
-| 💬 Saved Conversations | Sidebar to browse and resume past chat sessions |
-| 🔍 Search Conversations | Quickly find previous discussions by keyword |
-| 🗑 Delete Conversations | Remove unwanted chat sessions |
-| ⚡ Multi-Model Fallback | Groq auto-falls back across LLaMA and Gemma models |
-| 🌙 Dark / Light Mode | Toggle theme for comfortable reading |
-| 🔒 CSRF Protection | Django middleware guards all form submissions |
-| 🧑‍💻 Admin Panel | Django admin for managing users and conversations |
-| ⌛ Typing Indicator | Real-time visual feedback while AI responds |
-| 📌 Quick Suggestions | One-click common legal question prompts |
+| Backend | Django (Python 3.10) |
+| AI | Groq API — LLaMA 3.3 70B primary, LLaMA 3.1 8B + Gemma 2 9B as fallbacks |
+| Database | SQLite via Django ORM |
+| Frontend | Plain HTML, CSS, JavaScript |
+| Auth | Django's built-in authentication |
+| Config | python-dotenv |
 
 ---
 
-## 🛠️ Tech Stack
+## How it works under the hood
 
-| Layer | Technology |
-|---|---|
-| Language | Python 3.10 |
-| Backend Framework | Django |
-| ORM / Auth | Django ORM + Django Authentication |
-| Frontend | HTML5, CSS3, JavaScript |
-| AI Provider | Groq API |
-| Primary Model | LLaMA 3.3 70B |
-| Fallback Models | LLaMA 3.1 8B · Gemma 2 9B |
-| Database | SQLite (via Django ORM, auto-created) |
-| Config / Secrets | python-dotenv (.env file) |
-
----
-
-## 🏗️ System Architecture
+Nothing fancy, but it works really well:
 ```
-User Browser
-      │
-      ▼
-Frontend (HTML + JavaScript)
-      │
-      ▼
-Django Views
-      │
-      ├── Load full conversation history from SQLite
-      │
-      ▼
-Groq AI API  (LLaMA 3.3 70B → fallback if needed)
-      │
-      ▼
-AI Response generated with full context
-      │
-      ▼
-New messages stored in SQLite
-      │
-      ▼
-Response returned to browser
+User sends a message
+      ↓
+Django loads the full conversation history from SQLite
+      ↓
+Entire history + new message sent to Groq API
+      ↓
+AI responds with full context of everything said before
+      ↓
+New messages saved back to SQLite
+      ↓
+Response shown in browser
 ```
 
-The app stores every message in the database and reloads the full history before each API call — giving the AI complete context awareness across sessions.
+The context memory is the core feature. Without it, the AI treats every message as a fresh question. With it, you can have a real back-and-forth like you would with an actual advisor.
 
 ---
 
-## 📂 Project Structure
+## Project structure
 ```
 nyay-django/
 │
-├── manage.py                  ← Django command-line entry point
-├── requirements.txt           ← All Python dependencies
-├── .env                       ← GROQ_API_KEY + SECRET_KEY  (never commit!)
-├── .gitignore
-├── db.sqlite3                 ← Auto-created after migrate
+├── manage.py                  ← Django's entry point
+├── requirements.txt
+├── .env                       ← your API keys go here (never commit this)
+├── db.sqlite3                 ← auto-created when you migrate
 │
-├── nyay_project/              ← Django project config
-│   ├── __init__.py
-│   ├── settings.py            ← All configuration
-│   ├── urls.py                ← Master URL router
-│   └── wsgi.py                ← Production deployment entry point
+├── nyay_project/
+│   ├── settings.py            ← all config lives here
+│   ├── urls.py                ← master URL router
+│   └── wsgi.py
 │
-└── chat/                      ← Main Django app
-    ├── __init__.py
-    ├── models.py              ← Database tables as Python classes
-    ├── views.py               ← Route handlers (chat, auth, API)
-    ├── urls.py                ← App-level URL patterns
-    ├── admin.py               ← Register models in Django admin
-    ├── migrations/            ← Auto-generated SQL migration files
-    └── templates/
-        └── chat/
-            ├── index.html     ← Main chat UI
-            ├── login.html     ← Login page
-            └── signup.html    ← Signup + disclaimer modal
+└── chat/
+    ├── models.py              ← database tables as Python classes
+    ├── views.py               ← all the route logic
+    ├── urls.py
+    ├── admin.py
+    ├── migrations/
+    └── templates/chat/
+        ├── index.html         ← main chat UI
+        ├── login.html
+        └── signup.html
 ```
 
 ---
 
-## ⚙️ Installation Guide
+## Running it locally
 
 ### 1. Install Python 3.10
-Download from [python.org](https://www.python.org/downloads/release/python-3100/) and ensure **Add Python to PATH** is checked during installation.
+Grab it from [python.org](https://www.python.org/downloads/release/python-3100/). On Windows, make sure you check **Add Python to PATH** during setup.
 
-### 2. Allow Script Execution — Windows only
-Run once in PowerShell:
+### 2. Windows only — allow scripts to run
+Open PowerShell and run this once:
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-### 3. Clone the Repository
+### 3. Clone the repo
 ```bash
 git clone https://github.com/balaji049/nyay_ai_legal_advisor.git
 cd nyay_ai_legal_advisor
 ```
 
-### 4. Create a Virtual Environment
+### 4. Set up a virtual environment
 ```bash
 python -m venv venv
-```
-Activate it:
-```bash
+
 # Windows
 .\venv\Scripts\activate
 
 # macOS / Linux
 source venv/bin/activate
 ```
-You should see `(venv)` at the start of your terminal prompt.
+Once active, you'll see `(venv)` at the start of your terminal line.
 
-### 5. Upgrade pip
+### 5. Upgrade pip and install dependencies
 ```bash
 python -m pip install --upgrade pip
-```
-
-### 6. Install Dependencies
-```bash
 pip install -r requirements.txt
 ```
 
-### 7. Get a Free Groq API Key
-1. Go to [https://console.groq.com](https://console.groq.com)
-2. Sign up with Google or email
-3. Click **API Keys** → **Create API Key** → give it a name
-4. Copy the key immediately — it starts with `gsk_...` and is shown **only once**
+### 6. Get your Groq API key
+1. Go to [console.groq.com](https://console.groq.com) and sign up
+2. Click **API Keys → Create API Key**
+3. Copy it immediately — it starts with `gsk_...` and you only see it once
 
-### 8. Configure Environment Variables
-Create a `.env` file in the project root (same folder as `manage.py`):
+### 7. Create your `.env` file
+Make a file called `.env` in the root folder (same level as `manage.py`):
 ```env
 SECRET_KEY=your_django_secret_key_here
 GROQ_API_KEY=gsk_your_groq_key_here
 ```
-> ⚠️ Never commit this file to Git. It is already listed in `.gitignore`.
+This file is already in `.gitignore` — don't remove it from there.
 
-### 9. Run Database Migrations
+### 8. Set up the database
 ```bash
 python manage.py makemigrations chat
 python manage.py migrate
 ```
+`makemigrations` reads your models and creates migration files. `migrate` actually builds the tables in `db.sqlite3`.
 
-| Command | What it does |
-|---|---|
-| `makemigrations chat` | Reads `models.py` and creates migration blueprint files |
-| `migrate` | Executes those blueprints and creates tables in `db.sqlite3` |
-
-### 10. Start the Development Server
+### 9. Start the server
 ```bash
 python manage.py runserver
 ```
-Open your browser at: **http://127.0.0.1:8000**
-
-> 📝 Django defaults to port **8000**, not 5000 like Flask.
+Then open **http://127.0.0.1:8000** in your browser. (Django uses port 8000, not 5000.)
 
 ---
 
-## 🤖 Groq Multi-Model Fallback
+## Admin panel
 
-| Priority | Model | Notes |
-|---|---|---|
-| 1 — Primary | LLaMA 3.3 70B | Best accuracy for legal reasoning |
-| 2 — Fallback | LLaMA 3.1 8B | Faster, lighter responses |
-| 3 — Fallback | Gemma 2 9B | Additional redundancy |
-
----
-
-## 🧑‍💻 Django Admin Panel
-
-Create a superuser to access the admin panel at `/admin/`:
+Want to poke around the database through a UI? Create a superuser:
 ```bash
 python manage.py createsuperuser
 ```
+Then visit `/admin/` while the server is running.
 
 ---
 
-## 🚀 Future Improvements
+## What I want to add next
 
-- 🎤 Voice-based legal assistant
-- 📄 Legal document analysis (OCR)
-- 🌍 Multi-language support — Hindi, Telugu, Tamil
-- 📍 Nearby lawyer finder using maps API
-- 📱 Mobile app integration
-- 📊 Admin analytics dashboard
-
----
-
-## ⚠️ Legal Disclaimer
-
-This project provides **general legal information for educational purposes only**. It does not constitute legal advice and should not replace consultation with a qualified advocate registered with the Bar Council of India.
+- 🎤 Voice input so you can just speak your question
+- 📄 Upload a document and have the AI explain what it means
+- 🌍 Hindi, Telugu, Tamil support — most people asking legal questions aren't thinking in English
+- 📍 A map to find nearby lawyers if you need to take things further
+- 📱 A proper mobile app
 
 ---
 
-## 👨‍💻 Author
+## Disclaimer
 
-**Balaji Bhairwad**  
-B.Tech – Artificial Intelligence & Machine Learning  
+NYAY gives you **general legal information**, not legal advice. It's meant to help you understand your situation, not replace a qualified advocate. For anything serious, please consult a lawyer registered with the Bar Council of India.
+
+---
+
+## About
+
+Built by **Balaji Bhairwad** as part of my B.Tech in AI & ML.  
 GitHub: [github.com/balaji049](https://github.com/balaji049)
 
----
-
-⭐ If you found this project useful, please consider **starring the repository**!
+If this helped you, a ⭐ on the repo would mean a lot!
