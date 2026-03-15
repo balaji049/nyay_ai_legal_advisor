@@ -6,8 +6,10 @@
 # Django puts EVERYTHING in one place.
 
 import os
+import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
+
 
 # Load .env file — same as Flask's load_dotenv()
 load_dotenv()
@@ -25,10 +27,16 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "nyay-django-secret-change-this-in-pro
 
 # DEBUG = True shows detailed error pages during development
 # NEVER set DEBUG = True in production (it leaks code)
-DEBUG = True
+
+
+#DEBUG = True
+DEBUG = False  # Set to False for production
 
 # In production, set this to your domain: ["nyay.yourdomain.com"]
-ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = ["*"]
+
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+
 
 
 # ─── INSTALLED APPS ────────────────────────────────────────
@@ -88,11 +96,20 @@ WSGI_APPLICATION = "nyay_project.wsgi.application"
 # Django uses its ORM (Object Relational Mapper) instead of raw SQL
 # We define Python classes (models) and Django creates the SQL tables
 # SQLite = same as Flask version, stored in db.sqlite3 file
+
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",  # File saved in the project root
+#     }
+# }
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",  # File saved in the project root
-    }
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600
+    )
 }
 
 
@@ -131,6 +148,8 @@ USE_TZ        = True
 # ─── STATIC FILES ─────────────────────────────────────────
 # Static files = CSS, JS, images
 STATIC_URL = "/static/"
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 # ─── DEFAULT PRIMARY KEY ──────────────────────────────────
