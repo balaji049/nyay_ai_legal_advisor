@@ -99,6 +99,75 @@
     html.light .input-bar{background:linear-gradient(0deg,#EDE8DF,#F4F1EB);}
     html.light header{background:linear-gradient(135deg,#E8E2D8,#DDD6CB);}
     @media(max-width:768px){.sidebar{display:none;}#chatBox{padding:14px;}.input-bar{padding:10px 14px 14px;}}
+    #voiceBtn{
+  background:transparent;
+  border:1px solid var(--navy-border);
+  color:var(--gold);
+  width:34px;
+  height:34px;
+  border-radius:7px;
+  cursor:pointer;
+  font-size:15px;
+}
+/* Upload document button */
+#uploadBtn{
+  background:transparent;
+  border:1px solid var(--navy-border);
+  color:var(--gold);
+  width:34px;
+  height:34px;
+  border-radius:7px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  transition:all 0.2s;
+  flex-shrink:0;
+}
+
+/* Hover effect */
+#uploadBtn:hover{
+  border-color:var(--gold-dim);
+  color:var(--gold-light);
+  background:rgba(201,168,76,0.08);
+}
+
+.user-menu{
+position:relative;
+}
+
+.profile-menu{
+position:absolute;
+right:0;
+top:40px;
+background:var(--navy-mid);
+border:1px solid var(--navy-border);
+border-radius:8px;
+display:none;
+flex-direction:column;
+min-width:160px;
+z-index:100;
+}
+
+.profile-menu a,
+.profile-menu button{
+padding:10px 14px;
+text-align:left;
+background:none;
+border:none;
+color:var(--text-main);
+font-family:var(--font-body);
+font-size:0.8rem;
+cursor:pointer;
+width:100%;
+}
+
+.profile-menu a:hover,
+.profile-menu button:hover{
+background:rgba(201,168,76,0.1);
+}
+    
   </style>
 </head>
 <body>
@@ -113,8 +182,32 @@
     </div>
     <div class="header-right">
       {# Django template variable — passed from views.py render() context #}
-      <span class="user-pill">👤 {{ user_name }}</span>
+      <div class="user-menu">
+
+<button class="user-pill" onclick="toggleProfileMenu()">
+👤 {{ user_name }} ▼
+</button>
+
+<div id="profileMenu" class="profile-menu">
+
+<a href="/profile/">Profile</a>
+<a href="/cases/">My Legal Cases</a>
+
+<form method="POST" action="{% url 'logout' %}">
+{% csrf_token %}
+<button type="submit">Logout</button>
+</form>
+
+</div>
+
+</div>
       <span class="user-pill" id="msgCounter" style="display:none">0 exchanges</span>
+      <button class="hdr-btn"
+        id="exportChatBtn"
+        style="display:none"
+        onclick="exportChatPDF()">
+📄 Export Chat
+</button>
       <button class="hdr-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
       {# Django {% url %} tag generates the correct URL for the 'logout' view #}
       <form method="POST" action="{% url 'logout' %}" style="display:inline;">
@@ -128,6 +221,29 @@
     <aside class="sidebar">
       <div class="sidebar-top">
         <button class="new-chat-btn" onclick="newChat()">＋ New Conversation</button>
+        <a href="/document-analyzer/" class="new-chat-btn" style="display:block;text-align:center;text-decoration:none;">
+  📄 Document Analyzer
+</a>
+      <a href="/legal-generator/"
+class="new-chat-btn"
+style="display:block;text-align:center;text-decoration:none;">
+⚖️ Legal Document Generator
+</a>
+<a href="/sections/"
+class="new-chat-btn"
+style="display:block;text-align:center;text-decoration:none;">
+📚 IPC Section Lookup
+</a>
+<a href="/cases/"
+class="new-chat-btn"
+style="display:block;text-align:center;text-decoration:none;">
+🧾 My Legal Cases
+</a>
+<!-- <a href="/doc-chat/upload/"
+class="new-chat-btn"
+style="display:block;text-align:center;text-decoration:none;">
+📑 Ask About Document
+</a> -->
         <input class="search-box" id="searchBox" placeholder="🔍 Search conversations..."
                oninput="searchConversations(this.value)"/>
       </div>
@@ -154,13 +270,23 @@
         </div>
       </div>
       <div class="input-bar">
+       
         <div class="input-inner">
+          <button id="uploadBtn" onclick="openFileUpload()">＋</button>
           <textarea id="userInput" rows="1" placeholder="Ask your legal question..."
                     onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+                    <button id="voiceBtn" onclick="startVoiceInput()">🎤</button>
+                    
           <button id="sendBtn" onclick="sendMessage()">➤</button>
         </div>
         <p class="input-hint">Enter to send · Shift+Enter for new line · Context memory ON</p>
       </div>
+       <input
+type="file"
+id="docUpload"
+accept=".pdf"
+style="display:none"
+onchange="uploadDocument(event)">
     </div>
   </div>
 
@@ -310,6 +436,8 @@
         } else {
           appendMessage('assistant', data.reply);
           activeConvId  = data.conversation_id;
+          // SHOW EXPORT BUTTON
+document.getElementById("exportChatBtn").style.display = "inline-block";
           exchangeCount = Math.floor(data.message_count/2);
           updateCounter();
           loadConversations();
@@ -355,10 +483,103 @@
       badge.textContent=`${exchangeCount} exchange${exchangeCount!==1?'s':''}`;
     }
 
+    function exportChatPDF(){
+
+  if(!activeConvId){
+      alert("Start a conversation first.");
+      return;
+  }
+
+  window.location.href =
+      "/conversations/" + activeConvId + "/pdf/";
+}
+
+function toggleProfileMenu(){
+
+const menu = document.getElementById("profileMenu");
+
+menu.style.display =
+menu.style.display === "flex" ? "none" : "flex";
+
+}
+
+function openFileUpload(){
+
+  document.getElementById("docUpload").click();
+
+}
+
+async function uploadDocument(event){
+
+  const file = event.target.files[0];
+
+  if(!file) return;
+
+  const formData = new FormData();
+
+  formData.append("document", file);
+
+  const res = await fetch("/upload-document-context/",{
+    method:"POST",
+    headers:{
+      "X-CSRFToken": CSRF
+    },
+    body:formData
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+
+    appendMessage("assistant",
+      "📄 Document uploaded. You can now ask questions about it."
+    );
+
+  }else{
+
+    appendMessage("assistant",
+      "⚠️ Could not process document."
+    );
+
+  }
+
+}
+    function startVoiceInput(){
+
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if(!SpeechRecognition){
+        alert("Voice recognition not supported in this browser.");
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-IN";   // Indian English
+
+    recognition.start();
+
+    recognition.onresult = function(event){
+
+        const transcript = event.results[0][0].transcript;
+
+        const input = document.getElementById("userInput");
+
+        input.value = transcript;
+
+    };
+
+}
+
+
+
     window.addEventListener('DOMContentLoaded', async ()=>{
       await loadConversations();
       if(activeConvId) await openConversation(activeConvId);
     });
+
+    
   </script>
 </body>
 </html>

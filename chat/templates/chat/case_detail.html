@@ -1,0 +1,101 @@
+{% extends "chat/base.html" %}
+
+{% block content %}
+
+<div class="main-layout">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+
+<div class="sidebar-top">
+
+<button class="new-chat-btn"
+onclick="location.href='/cases/new/'">
++ New Case
+</button>
+
+</div>
+
+<div class="conv-list">
+
+{% for c in cases %}
+
+<div class="conv-item {% if c.id == case.id %}active{% endif %}"
+onclick="window.location.href='/cases/{{c.id}}/'">
+
+<div class="conv-icon">📂</div>
+
+<div class="conv-info">
+<div class="conv-title">{{ c.title }}</div>
+<div class="conv-date">{{ c.court_date }}</div>
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</aside>
+
+
+<!-- Case Detail -->
+<div class="chat-wrapper">
+
+<div id="chatBox">
+
+<div class="bubble assistant">
+
+<h2>{{ case.title }}</h2>
+
+
+
+<br>
+
+<strong>FIR Number:</strong> {{ case.fir_number }}
+
+<br><br>
+
+<strong>Court Date:</strong> {{ case.court_date }}
+
+<br><br>
+
+<strong>Lawyer:</strong> {{ case.lawyer_name }}
+
+<br><br>
+
+<strong>Notes:</strong>
+
+<br>
+
+{{ case.notes }}
+
+<br><br>
+
+<button class="chip"
+onclick="location.href='/cases/{{case.id}}/edit/'">
+✏ Edit Case
+</button>
+
+<button class="chip"
+style="background:#b94a48;color:white"
+onclick="location.href='/cases/{{case.id}}/delete/'">
+🗑 Delete Case
+</button>
+
+<br>
+
+<button class="chip"
+onclick="location.href='/cases/{{case.id}}/pdf/'">
+📄 Download PDF
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

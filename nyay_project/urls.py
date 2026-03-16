@@ -9,6 +9,8 @@
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     # Django admin panel — available at /admin/
@@ -19,3 +21,7 @@ urlpatterns = [
     # include("chat.urls") means: go look in chat/urls.py for the rest
     path("", include("chat.urls")),
 ]
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

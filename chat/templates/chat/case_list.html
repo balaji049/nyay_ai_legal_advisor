@@ -1,0 +1,68 @@
+{% extends "chat/base.html" %}
+
+{% block content %}
+
+<div class="main-layout">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+
+<div class="sidebar-top">
+
+<button class="new-chat-btn"
+onclick="location.href='/cases/new/'">
++ New Case
+</button>
+
+</div>
+
+<div class="conv-list">
+
+{% for case in cases %}
+
+<div class="conv-item"
+onclick="window.location.href='/cases/{{case.id}}/'">
+
+<div class="conv-icon">📂</div>
+
+<div class="conv-info">
+<div class="conv-title">{{ case.title }}</div>
+<div class="conv-date">{{ case.court_date }}</div>
+</div>
+
+</div>
+
+{% empty %}
+
+<div class="empty-convs">
+No legal cases yet.<br>
+Create one using "New Case".
+</div>
+
+{% endfor %}
+
+</div>
+
+</aside>
+
+
+<!-- Main Content -->
+<div class="chat-wrapper">
+
+<div id="chatBox">
+
+<div class="welcome-state">
+
+<h2>My Legal Cases</h2>
+
+<p>Select a case from the sidebar to view details.</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

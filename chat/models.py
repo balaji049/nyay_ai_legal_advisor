@@ -50,6 +50,46 @@ class Conversation(models.Model):
     def message_count(self):
         """Helper to count messages — used in the API response."""
         return self.messages.count()
+    
+class LawSection(models.Model):
+
+    code = models.CharField(max_length=20)
+
+    title = models.CharField(max_length=200)
+
+    description = models.TextField()
+
+    punishment = models.TextField()
+
+    bailable = models.BooleanField()
+
+    def __str__(self):
+        return f"Section {self.code} - {self.title}"
+    
+class LegalCase(models.Model):
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="legal_cases"
+    )
+
+    title = models.CharField(max_length=200)
+
+    fir_number = models.CharField(max_length=100, blank=True)
+
+    court_date = models.DateField(null=True, blank=True)
+
+    lawyer_name = models.CharField(max_length=200, blank=True)
+
+    notes = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.user.email}"
 
 
 class Message(models.Model):

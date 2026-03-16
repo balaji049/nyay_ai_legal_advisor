@@ -1,0 +1,71 @@
+{% extends "chat/base.html" %}
+
+{% block content %}
+
+<div class="main-layout">
+
+<aside class="sidebar">
+<div class="sidebar-top">
+
+<button class="new-chat-btn" onclick="location.href='/'">
+Back to Chat
+</button>
+
+</div>
+</aside>
+
+<div class="chat-wrapper">
+
+<div id="chatBox">
+
+<div class="welcome-state">
+
+<div class="emblem">⚖️</div>
+
+<h2>Legal Document Generator</h2>
+
+<p>
+Describe your situation and NYAY will generate
+a formal FIR, legal notice, or complaint letter.
+</p>
+
+{% if error %}
+<p style="color:red">{{ error }}</p>
+{% endif %}
+
+<form method="POST">
+
+{% csrf_token %}
+
+<select name="doc_type" class="search-box">
+
+<option value="FIR complaint">FIR Complaint</option>
+<option value="legal notice">Legal Notice</option>
+<option value="consumer complaint">Consumer Complaint</option>
+<option value="police complaint">Police Complaint</option>
+
+</select>
+
+<br><br>
+
+<textarea name="situation"
+placeholder="Describe your situation..."
+style="width:400px;height:120px;"></textarea>
+
+<br><br>
+
+<button class="chip" type="submit">
+Generate Document
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

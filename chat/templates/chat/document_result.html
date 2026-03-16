@@ -1,0 +1,61 @@
+{% extends "chat/base.html" %}
+
+{% block content %}
+
+<div class="main-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-top">
+
+      <button class="new-chat-btn"
+        onclick="location.href='/document-analyzer/'">
+        Analyze Another Document
+      </button>
+
+      <button class="new-chat-btn"
+        onclick="location.href='/'">
+        Back to Chat
+      </button>
+
+    </div>
+  </aside>
+
+  <div class="chat-wrapper">
+
+    <div id="chatBox">
+
+      <div class="welcome-state">
+
+        <div class="emblem">📊</div>
+
+        <h2>Document Analysis</h2>
+
+        <div class="bubble assistant">
+          {{ analysis|linebreaks }}
+        </div>
+
+        <br>
+
+        <button class="chip" onclick="copyText()">
+          Copy Analysis
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+function copyText(){
+  const text = document.querySelector(".bubble").innerText;
+  navigator.clipboard.writeText(text);
+  alert("Analysis copied!");
+}
+
+</script>
+
+{% endblock %}

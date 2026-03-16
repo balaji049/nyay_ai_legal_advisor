@@ -7,6 +7,12 @@
 
 from django.contrib import admin
 from .models import Conversation, Message
+from .models import LawSection
+
+admin.site.register(LawSection)
+
+from .models import LegalCase
+admin.site.register(LegalCase)
 
 
 class MessageInline(admin.TabularInline):

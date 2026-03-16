@@ -1,0 +1,64 @@
+{% extends "chat/base.html" %}
+
+{% block content %}
+
+<div class="main-layout">
+
+<div class="chat-wrapper">
+
+<div id="chatBox">
+
+<div class="welcome-state">
+
+<h2>Edit Case</h2>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<input class="search-box"
+name="title"
+value="{{case.title}}">
+
+<br><br>
+
+<input class="search-box"
+name="fir_number"
+value="{{case.fir_number}}">
+
+<br><br>
+
+<input class="search-box"
+type="date"
+name="court_date"
+value="{{case.court_date}}">
+
+<br><br>
+
+<input class="search-box"
+name="lawyer"
+value="{{case.lawyer_name}}">
+
+<br><br>
+
+<textarea
+name="notes"
+style="width:400px;height:120px;">{{case.notes}}</textarea>
+
+<br><br>
+
+<button class="chip">
+Update Case
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

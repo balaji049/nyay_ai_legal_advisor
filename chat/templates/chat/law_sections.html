@@ -1,0 +1,81 @@
+{% extends "chat/base.html" %}
+
+{% block content %}
+
+<div class="main-layout">
+
+<aside class="sidebar">
+
+<div class="sidebar-top">
+
+<button class="new-chat-btn"
+onclick="location.href='/'">
+Back to Chat
+</button>
+
+</div>
+
+</aside>
+
+<div class="chat-wrapper">
+
+<div id="chatBox">
+
+<div class="welcome-state">
+
+<h2>IPC / BNS Section Lookup</h2>
+
+<form method="GET">
+
+<input class="search-box"
+name="q"
+placeholder="Search section or keyword..."
+value="{{ query }}">
+
+</form>
+
+<br>
+
+{% for s in sections %}
+
+<div class="bubble assistant">
+
+<strong>Section {{ s.code }} – {{ s.title }}</strong>
+
+<br><br>
+
+<b>Punishment:</b>
+{{ s.punishment }}
+
+<br><br>
+
+<b>Bailable:</b>
+{% if s.bailable %}
+Yes
+{% else %}
+No
+{% endif %}
+
+<br><br>
+
+{{ s.description }}
+
+</div>
+
+<br>
+
+{% empty %}
+
+<p>No results found.</p>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

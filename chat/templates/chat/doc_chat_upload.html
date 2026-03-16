@@ -1,0 +1,41 @@
+{% extends "chat/base.html" %}
+
+{% block content %}
+
+<div class="main-layout">
+
+<div class="chat-wrapper">
+
+<div id="chatBox">
+
+<div class="welcome-state">
+
+<h2>Upload Legal Document</h2>
+
+<p>Upload a contract or legal document and ask questions about it.</p>
+
+{% if error %}
+<p style="color:red">{{ error }}</p>
+{% endif %}
+
+<form method="POST" enctype="multipart/form-data">
+
+{% csrf_token %}
+
+<input type="file" name="document" required>
+
+<br><br>
+
+<button class="chip">Upload Document</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

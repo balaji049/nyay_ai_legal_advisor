@@ -1,0 +1,80 @@
+[
+ {
+  "model": "chat.lawsection",
+  "pk": 1,
+  "fields": {
+   "code": "302",
+   "title": "Murder",
+   "punishment": "Death penalty or life imprisonment",
+   "bailable": false,
+   "description": "Punishment for murder under IPC."
+  }
+ },
+ {
+  "model": "chat.lawsection",
+  "pk": 2,
+  "fields": {
+   "code": "420",
+   "title": "Cheating",
+   "punishment": "Up to 7 years imprisonment and fine",
+   "bailable": false,
+   "description": "Cheating and dishonestly inducing delivery of property."
+  }
+ },
+ {
+  "model": "chat.lawsection",
+  "pk": 3,
+  "fields": {
+   "code": "379",
+   "title": "Theft",
+   "punishment": "Up to 3 years imprisonment or fine or both",
+   "bailable": true,
+   "description": "Dishonest removal of movable property."
+  }
+ },
+ {
+  "model": "chat.lawsection",
+  "pk": 4,
+  "fields": {
+   "code": "376",
+   "title": "Rape",
+   "punishment": "10 years to life imprisonment",
+   "bailable": false,
+   "description": "Punishment for rape."
+  }
+ },
+ {
+  "model": "chat.lawsection",
+  "pk": 5,
+  "fields": {
+   "code": "498A",
+   "title": "Cruelty by husband or relatives",
+   "punishment": "Up to 3 years imprisonment and fine",
+   "bailable": false,
+   "description": "Cruelty against a married woman by husband or relatives."
+  }
+ },
+    {
+    "model": "chat.lawsection",
+    "pk": 6,
+    "fields": {
+    "code": "34",
+    "title": "Common Intention",
+    "punishment": "Same as the offense committed",
+    "bailable": false,
+    "description": "When a criminal act is done by several persons in furtherance of common intention."
+    }
+    },
+    {
+    "model": "chat.lawsection",
+    "pk": 7,
+    "fields": {
+    "code": "120B",
+    "title": "Criminal Conspiracy",
+    "punishment": "Up to 6 months to life imprisonment",
+    "bailable": false,
+    "description": "When two or more persons agree to commit an illegal act."
+    }
+}
+
+]

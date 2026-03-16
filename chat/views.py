@@ -14,6 +14,17 @@
 #   Flask: render_template("x.html") →  Django: render(request, "chat/x.html", context)
 
 import json
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+import io
+from datetime import datetime
+from django.http import HttpResponse
+import fitz  # PyMuPDF for PDF text extraction
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import io
 from django.shortcuts           import render, redirect, get_object_or_404
 from django.contrib.auth        import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -24,7 +35,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf                import settings
 from groq                       import Groq
 
-from .models import Conversation, Message
+from .models import Conversation, Message, LawSection, LegalCase
+
 
 # ─── GROQ CLIENT ───────────────────────────────────────────
 # Created once at module load — reused across all requests
@@ -318,21 +330,512 @@ def api_conversation_detail(request, conv_id):
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
+@login_required
+def document_analyzer(request):
+    """
+    Upload a PDF legal document and analyze it using Groq AI.
+    """
+
+    if request.method == "POST":
+        pdf_file = request.FILES.get("document")
+
+        if not pdf_file:
+            return render(request, "chat/document_analyzer.html", {
+                "error": "Please upload a PDF file."
+            })
+
+        try:
+            # Extract text from PDF
+            doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+
+            text = ""
+            for page in doc:
+                text += page.get_text()
+
+            text = text[:12000]
+
+            prompt = f"""
+Explain this legal document in simple language.
+
+Identify:
+- Important clauses
+- Risky clauses
+- Rights of the person signing
+- Things the user should question before signing
+
+Document:
+{text}
+"""
+
+            messages_list = [
+                {"role": "user", "content": prompt}
+            ]
+
+            reply, error = call_groq(messages_list)
+
+            if error:
+                return render(request, "chat/document_result.html", {
+                    "error": error
+                })
+
+            return render(request, "chat/document_result.html", {
+                "analysis": reply
+            })
+
+        except Exception as e:
+            return render(request, "chat/document_analyzer.html", {
+                "error": f"Error processing PDF: {str(e)}"
+            })
+
+    return render(request, "chat/document_analyzer.html")
+
+@login_required
+def generate_legal_document(request):
+
+    if request.method == "POST":
+
+        situation = request.POST.get("situation", "").strip()
+        doc_type = request.POST.get("doc_type", "")
+
+        if not situation:
+            return render(request, "chat/legal_generator.html", {
+                "error": "Please describe your situation."
+            })
+
+        prompt = f"""
+You are an Indian legal assistant.
+
+Create a properly structured {doc_type} based on the following situation.
+
+Include:
+- Title
+- Parties involved
+- Legal sections if applicable
+- Clear structured format
+- Formal legal language suitable for India
+
+Situation:
+{situation}
+"""
+
+        messages_list = [
+            {"role": "user", "content": prompt}
+        ]
+
+        reply, error = call_groq(messages_list)
+
+        if error:
+            return render(request, "chat/legal_result.html", {
+                "error": error
+            })
+
+        return render(request, "chat/legal_result.html", {
+            "result": reply
+        })
+
+    return render(request, "chat/legal_generator.html")
+    
+@login_required
+def law_sections(request):
+
+    query = request.GET.get("q", "")
+
+    sections = []
+
+    if query:
+
+        from django.db.models import Q
+
+        sections = LawSection.objects.filter(
+            Q(code__icontains=query) |
+            Q(title__icontains=query) |
+            Q(description__icontains=query)
+        )
+
+    return render(request,
+                  "chat/law_sections.html",
+                  {"sections": sections, "query": query})
+
+@login_required
+def my_cases(request):
+
+    cases = LegalCase.objects.filter(user=request.user)
+
+    return render(
+        request,
+        "chat/case_list.html",
+        {"cases": cases}
+    )
+
+@login_required
+def create_case(request):
+
+    if request.method == "POST":
+
+        title = request.POST.get("title")
+        fir_number = request.POST.get("fir_number")
+        court_date = request.POST.get("court_date")
+        lawyer = request.POST.get("lawyer")
+        notes = request.POST.get("notes")
+
+        LegalCase.objects.create(
+            user=request.user,
+            title=title,
+            fir_number=fir_number,
+            court_date=court_date if court_date else None,
+            lawyer_name=lawyer,
+            notes=notes
+        )
+
+        return redirect("my_cases")
+
+    return render(request, "chat/create_case.html")
+
+@login_required
+def case_detail(request, case_id):
+
+    case = get_object_or_404(
+        LegalCase,
+        id=case_id,
+        user=request.user
+    )
+
+    cases = LegalCase.objects.filter(user=request.user)
+
+    return render(
+        request,
+        "chat/case_detail.html",
+        {
+            "case": case,
+            "cases": cases
+        }
+    )
+@login_required
+def edit_case(request, case_id):
+
+    case = get_object_or_404(LegalCase, id=case_id, user=request.user)
+
+    if request.method == "POST":
+
+        case.title = request.POST.get("title")
+        case.fir_number = request.POST.get("fir_number")
+        case.court_date = request.POST.get("court_date")
+        case.lawyer_name = request.POST.get("lawyer")
+        case.notes = request.POST.get("notes")
+
+        case.save()
+
+        return redirect("case_detail", case_id=case.id)
+
+    return render(
+        request,
+        "chat/edit_case.html",
+        {"case": case}
+    )
+
+import fitz
+
+@login_required
+def upload_doc_chat(request):
+
+    if request.method == "POST":
+
+        pdf = request.FILES.get("document")
+
+        if not pdf:
+            return render(request, "chat/doc_chat_upload.html", {
+                "error": "Please upload a PDF"
+            })
+
+        doc = fitz.open(stream=pdf.read(), filetype="pdf")
+
+        text = ""
+
+        for page in doc:
+            text += page.get_text()
+
+        text = text[:15000]  # avoid token overflow
+
+        request.session["doc_context"] = text
+
+        return redirect("doc_chat")
+
+    return render(request, "chat/doc_chat_upload.html")
+
+@login_required
+def doc_chat(request):
+
+    doc_text = request.session.get("doc_context")
+
+    if not doc_text:
+        return redirect("upload_doc_chat")
+
+    answer = None
+
+    if request.method == "POST":
+
+        question = request.POST.get("question")
+
+        prompt = f"""
+You are an Indian legal assistant.
+
+Use ONLY the document below to answer.
+
+Document:
+{doc_text}
+
+Question:
+{question}
+
+Explain clearly in simple terms.
+"""
+
+        messages = [
+            {"role": "user", "content": prompt}
+        ]
+
+        reply, error = call_groq(messages)
+
+        if error:
+            answer = error
+        else:
+            answer = reply
+
+    return render(
+        request,
+        "chat/doc_chat.html",
+        {"answer": answer}
+    )
+
+@csrf_exempt
+@login_required
+def upload_document_context(request):
+
+    if request.method != "POST":
+        return JsonResponse({"error":"POST required"}, status=400)
+
+    pdf = request.FILES.get("document")
+
+    if not pdf:
+        return JsonResponse({"error":"No file uploaded"}, status=400)
+
+    import fitz
+
+    doc = fitz.open(stream=pdf.read(), filetype="pdf")
+
+    text = ""
+
+    for page in doc:
+        text += page.get_text()
+
+    text = text[:15000]
+
+    request.session["doc_context"] = text
+
+    return JsonResponse({"success": True})
+
+
+
+@login_required
+def delete_case(request, case_id):
+
+    case = get_object_or_404(LegalCase, id=case_id, user=request.user)
+
+    case.delete()
+
+    return redirect("my_cases")
+
+@login_required
+def profile_page(request):
+
+    total_conversations = Conversation.objects.filter(
+        user=request.user
+    ).count()
+
+    total_cases = LegalCase.objects.filter(
+        user=request.user
+    ).count()
+
+    return render(
+        request,
+        "chat/profile.html",
+        {
+            "user": request.user,
+            "total_conversations": total_conversations,
+            "total_cases": total_cases
+        }
+    )
+
+@login_required
+def export_case_pdf(request, case_id):
+
+    case = get_object_or_404(LegalCase, id=case_id, user=request.user)
+
+    buffer = io.BytesIO()
+
+    p = canvas.Canvas(buffer, pagesize=letter)
+
+    y = 750
+
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(50, y, "NYAY - Legal Case Report")
+
+    y -= 40
+    p.setFont("Helvetica", 12)
+
+    p.drawString(50, y, f"Case Title: {case.title}")
+    y -= 20
+
+    p.drawString(50, y, f"FIR Number: {case.fir_number}")
+    y -= 20
+
+    p.drawString(50, y, f"Court Date: {case.court_date}")
+    y -= 20
+
+    p.drawString(50, y, f"Lawyer: {case.lawyer_name}")
+    y -= 40
+
+    p.drawString(50, y, "Notes:")
+    y -= 20
+
+    text_object = p.beginText(50, y)
+    text_object.textLines(case.notes)
+
+    p.drawText(text_object)
+
+    p.showPage()
+    p.save()
+
+    buffer.seek(0)
+
+    return HttpResponse(
+        buffer,
+        content_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="case_{case.id}.pdf"'
+        },
+    )
+
+
+
+
+@login_required
+def export_chat_pdf(request, conv_id):
+
+    conversation = get_object_or_404(
+        Conversation,
+        id=conv_id,
+        user=request.user
+    )
+
+    messages = conversation.messages.all()
+
+    buffer = io.BytesIO()
+
+    p = canvas.Canvas(buffer, pagesize=letter)
+
+    width, height = letter
+
+    y = height - 60
+
+    # HEADER
+    p.setFont("Helvetica-Bold", 18)
+    p.drawString(50, y, "NYAY AI Legal Advisor")
+
+    y -= 25
+
+    p.setFont("Helvetica", 11)
+    p.drawString(50, y, f"Conversation: {conversation.title}")
+
+    y -= 15
+    p.drawString(50, y, f"Generated: {datetime.now().strftime('%d %B %Y')}")
+
+    y -= 30
+
+    p.line(50, y, width - 50, y)
+
+    y -= 30
+
+    # CHAT CONTENT
+    for msg in messages:
+
+        if y < 100:
+            p.showPage()
+            y = height - 60
+
+        role = "User" if msg.role == "user" else "NYAY"
+
+        if role == "User":
+            p.setFont("Helvetica-Bold", 12)
+            p.drawString(50, y, "User:")
+        else:
+            p.setFont("Helvetica-Bold", 12)
+            p.drawString(50, y, "NYAY:")
+
+        y -= 18
+
+        p.setFont("Helvetica", 11)
+
+        lines = msg.content.split("\n")
+
+        for line in lines:
+
+            if y < 100:
+                p.showPage()
+                y = height - 60
+
+            p.drawString(60, y, line[:95])
+
+            y -= 15
+
+        y -= 10
+
+    # FOOTER DISCLAIMER
+    y -= 20
+
+    if y < 120:
+        p.showPage()
+        y = height - 60
+
+    p.setFont("Helvetica-Oblique", 9)
+
+    p.drawString(
+        50,
+        y,
+        "Disclaimer: This AI-generated information is for educational purposes only."
+    )
+
+    y -= 12
+
+    p.drawString(
+        50,
+        y,
+        "For legal matters, consult a licensed advocate registered with the Bar Council of India."
+    )
+
+    p.save()
+
+    buffer.seek(0)
+
+    return HttpResponse(
+        buffer,
+        content_type="application/pdf",
+        headers={
+            "Content-Disposition":
+            f'attachment; filename="nyay_conversation_{conversation.id}.pdf"'
+        },
+    )
+
+
 
 @login_required
 @require_http_methods(["POST"])
 def api_chat(request):
-    """
-    POST /api/chat/
-    Main AI endpoint — identical logic to Flask version.
 
-    Accepts: { "message": "...", "conversation_id": 123 or null }
-    Returns: { "reply": "...", "conversation_id": 123, ... }
-    """
     try:
-        data         = json.loads(request.body)
+        data = json.loads(request.body)
         user_message = data.get("message", "").strip()
-        conv_id      = data.get("conversation_id")
+        conv_id = data.get("conversation_id")
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
@@ -342,35 +845,70 @@ def api_chat(request):
     # Get or create conversation
     if not conv_id:
         title = user_message[:50] + ("..." if len(user_message) > 50 else "")
-        conv  = Conversation.objects.create(user=request.user, title=title)
+        conv = Conversation.objects.create(user=request.user, title=title)
         is_new = True
     else:
-        conv   = get_object_or_404(Conversation, id=conv_id, user=request.user)
+        conv = get_object_or_404(Conversation, id=conv_id, user=request.user)
         is_new = False
 
-    # Load full message history from DB (context memory!)
-    # Django ORM: conv.messages.all() returns all related Message objects
+    # Load conversation history
     history = conv.messages.all()
-    messages_list = [{"role": m.role, "content": m.content} for m in history]
-    messages_list.append({"role": "user", "content": user_message})
+
+    messages_list = [
+        {"role": m.role, "content": m.content}
+        for m in history
+    ]
+
+    # Add current user message
+    messages_list.append({
+        "role": "user",
+        "content": user_message
+    })
+
+    # ===== DOCUMENT RAG CONTEXT =====
+    doc_context = request.session.get("doc_context")
+
+    if doc_context:
+        messages_list.insert(
+            0,
+            {
+                "role": "system",
+                "content": f"""
+You are Nyay, an Indian legal AI assistant.
+
+The user uploaded a legal document. Use it as context when answering.
+
+Document:
+{doc_context}
+"""
+            }
+        )
 
     # Call Groq AI
     reply, error = call_groq(messages_list)
+
     if error:
         return JsonResponse({"error": error}, status=500)
 
-    # Save both messages to DB using Django ORM
-    Message.objects.create(conversation=conv, role="user",      content=user_message)
-    Message.objects.create(conversation=conv, role="assistant", content=reply)
+    # Save messages
+    Message.objects.create(
+        conversation=conv,
+        role="user",
+        content=user_message
+    )
 
-    # Django auto_now=True on updated_at refreshes it on every conv.save()
-    # But Message.objects.create() doesn't touch the conversation, so save manually:
-    conv.save()   # This triggers auto_now=True on updated_at
+    Message.objects.create(
+        conversation=conv,
+        role="assistant",
+        content=reply
+    )
+
+    conv.save()
 
     return JsonResponse({
-        "reply":           reply,
+        "reply": reply,
         "conversation_id": conv.id,
-        "is_new":          is_new,
-        "conv_title":      conv.title,
-        "message_count":   conv.messages.count(),
+        "is_new": is_new,
+        "conv_title": conv.title,
+        "message_count": conv.messages.count(),
     })

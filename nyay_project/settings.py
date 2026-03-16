@@ -29,8 +29,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "nyay-django-secret-change-this-in-pro
 # NEVER set DEBUG = True in production (it leaks code)
 
 
-#DEBUG = True
-DEBUG = False  # Set to False for production
+DEBUG = True
+#DEBUG = False  # Set to False for production
 
 # In production, set this to your domain: ["nyay.yourdomain.com"]
 # ALLOWED_HOSTS = ["*"]
@@ -147,10 +147,17 @@ USE_TZ        = True
 
 # ─── STATIC FILES ─────────────────────────────────────────
 # Static files = CSS, JS, images
+# STATIC_URL = "/static/"
+
+# STATIC_ROOT = BASE_DIR / "staticfiles"
+
 STATIC_URL = "/static/"
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # ─── DEFAULT PRIMARY KEY ──────────────────────────────────
 # Django uses BigAutoField (64-bit integer) as default PK for new models

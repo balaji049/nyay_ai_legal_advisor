@@ -1,0 +1,37 @@
+{% extends "chat/base.html" %}
+
+{% block content %}
+
+<div class="main-layout">
+
+<div class="chat-wrapper">
+
+<div id="chatBox">
+
+<div class="welcome-state">
+
+<h2>👤 Profile</h2>
+
+<br>
+
+<p><strong>Name:</strong> {{ user.first_name }}</p>
+<p><strong>Email:</strong> {{ user.email }}</p>
+
+<br>
+
+<p><strong>Total Conversations:</strong> {{ total_conversations }}</p>
+<p><strong>Legal Cases:</strong> {{ total_cases }}</p>
+
+<br>
+
+<a href="/" class="chip">Back to Chat</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

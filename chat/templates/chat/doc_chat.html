@@ -1,0 +1,50 @@
+{% extends "chat/base.html" %}
+
+{% block content %}
+
+<div class="main-layout">
+
+<div class="chat-wrapper">
+
+<div id="chatBox">
+
+<div class="welcome-state">
+
+<h2>Ask About Your Document</h2>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<textarea
+name="question"
+placeholder="Ask a question about the document..."
+style="width:400px;height:120px;"></textarea>
+
+<br><br>
+
+<button class="chip">Ask Question</button>
+
+</form>
+
+{% if answer %}
+
+<br>
+
+<div class="bubble assistant">
+
+{{ answer }}
+
+</div>
+
+{% endif %}
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

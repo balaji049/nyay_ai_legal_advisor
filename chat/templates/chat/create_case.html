@@ -1,0 +1,65 @@
+{% extends "chat/base.html" %}
+
+{% block content %}
+
+<div class="main-layout">
+
+<div class="chat-wrapper">
+
+<div id="chatBox">
+
+<div class="welcome-state">
+
+<h2>Create Legal Case</h2>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<input class="search-box"
+name="title"
+placeholder="Case Title"
+required>
+
+<br><br>
+
+<input class="search-box"
+name="fir_number"
+placeholder="FIR Number">
+
+<br><br>
+
+<input class="search-box"
+type="date"
+name="court_date">
+
+<br><br>
+
+<input class="search-box"
+name="lawyer"
+placeholder="Lawyer Name">
+
+<br><br>
+
+<textarea
+name="notes"
+placeholder="Case Notes"
+style="width:400px;height:120px;"></textarea>
+
+<br><br>
+
+<button class="chip" type="submit">
+Save Case
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

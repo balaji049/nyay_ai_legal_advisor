@@ -1,0 +1,56 @@
+{% extends "chat/base.html" %}
+
+{% block content %}
+
+<div class="main-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <button class="new-chat-btn" onclick="location.href='/'">
+        ← Back to Chat
+      </button>
+    </div>
+  </aside>
+
+  <div class="chat-wrapper">
+
+    <div id="chatBox">
+
+      <div class="welcome-state">
+
+        <div class="emblem">📄</div>
+
+        <h2>Legal Document Analyzer</h2>
+
+        <p>
+        Upload a legal document like a rental agreement,
+        employment contract, or legal notice.
+        </p>
+
+        {% if error %}
+        <p style="color:#ff6b6b">{{ error }}</p>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+
+          {% csrf_token %}
+
+          <input type="file" name="document" accept=".pdf" required>
+
+          <br><br>
+
+          <button class="chip" type="submit">
+            Analyze Document
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

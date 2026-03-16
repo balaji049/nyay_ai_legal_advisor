@@ -55,7 +55,13 @@ Thumbs.db
 build/
 dist/
 *.egg-info/
-
+venv/
+__pycache__/
+*.pyc
+.env
+db.sqlite3
+*.log
+media/
 # ==============================
 # Testing
 # ==============================
