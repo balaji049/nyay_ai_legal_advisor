@@ -167,6 +167,69 @@ width:100%;
 .profile-menu button:hover{
 background:rgba(201,168,76,0.1);
 }
+
+.bubble ol {
+  padding-left: 20px;
+  margin-top: 10px;
+}
+
+.bubble li {
+  margin-bottom: 6px;
+}
+
+.bubble strong {
+  color: var(--gold-light);
+}
+
+.bubble em {
+  color: var(--cream-dim);
+}
+
+/* Headings */
+.bubble h1 {
+  font-size: 1.4rem;
+  color: var(--gold-light);
+  margin-bottom: 8px;
+}
+
+.bubble h2 {
+  font-size: 1.2rem;
+  color: var(--gold-light);
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+
+.bubble h3 {
+  font-size: 1rem;
+  color: var(--gold);
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+
+/* Lists */
+.bubble ol, .bubble ul {
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+.bubble li {
+  margin-bottom: 6px;
+  line-height: 1.6;
+}
+
+/* Strong + italic */
+.bubble strong {
+  color: var(--gold-light);
+}
+
+.bubble em {
+  color: var(--cream-dim);
+}
+
+/* Paragraph spacing */
+.bubble br {
+  margin-bottom: 6px;
+}
     
   </style>
 </head>
@@ -455,18 +518,50 @@ document.getElementById("exportChatBtn").style.display = "inline-block";
       document.getElementById('userInput').focus();
     }
 
-    function appendMessage(role, text) {
-      const chatBox = document.getElementById('chatBox');
-      const div = document.createElement('div');
-      div.className = `message ${role}`;
-      const formatted = text
-        .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g,'<em>$1</em>')
-        .replace(/\n/g,'<br>');
-      div.innerHTML = `<div class="avatar">${role==='user'?'👤':'⚖️'}</div><div class="bubble">${formatted}</div>`;
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
+    function formatText(text) {
+
+  // Headings (### → h3)
+  text = text.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+  text = text.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+  text = text.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+
+  // Bold
+  text = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+
+  // Italic
+  text = text.replace(/\*(.*?)\*/g,'<em>$1</em>');
+
+  // Numbered list
+  text = text.replace(/^\d+\.\s(.+)/gm,'<li>$1</li>');
+  text = text.replace(/(<li>.*<\/li>)/gs,'<ol>$1</ol>');
+
+  // Bullet list (* or -)
+  text = text.replace(/^[\*\-]\s(.+)/gm,'<li>$1</li>');
+  text = text.replace(/(<li>.*<\/li>)/gs,'<ul>$1</ul>');
+
+  // Line breaks
+  text = text.replace(/\n/g,'<br>');
+
+  return text;
+}
+
+
+function appendMessage(role, text) {
+
+  const chatBox = document.getElementById('chatBox');
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+
+  const formatted = formatText(text);
+
+  div.innerHTML = `
+    <div class="avatar">${role==='user'?'👤':'⚖️'}</div>
+    <div class="bubble">${formatted}</div>
+  `;
+
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
 
     function showTyping() {
       const chatBox = document.getElementById('chatBox');
@@ -581,5 +676,6 @@ async function uploadDocument(event){
 
     
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </body>
 </html>

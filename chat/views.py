@@ -15,6 +15,9 @@
 
 import json
 from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 import io
@@ -295,6 +298,32 @@ def api_conversations(request):
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
+
+@login_required
+def download_pdf(request):
+    text = request.POST.get("text", "")
+
+    buffer = io.BytesIO()
+
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    styles = getSampleStyleSheet()
+
+    story = []
+
+    # Title
+    story.append(Paragraph("NYAY Legal Document", styles['Title']))
+    story.append(Spacer(1, 12))
+
+    # Content
+    for line in text.split("\n"):
+        story.append(Paragraph(line, styles['Normal']))
+        story.append(Spacer(1, 8))
+
+    doc.build(story)
+
+    buffer.seek(0)
+
+    return HttpResponse(buffer, content_type='application/pdf')
 
 @login_required
 def api_conversation_detail(request, conv_id):

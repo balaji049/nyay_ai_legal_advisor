@@ -30,9 +30,33 @@
 
         <h2>Document Analysis</h2>
 
-        <div class="bubble assistant">
-          {{ analysis|linebreaks }}
-        </div>
+        <div class="bubble assistant" id="analysisBox"></div>
+<script>
+function formatText(text) {
+
+  text = text.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+  text = text.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+  text = text.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+
+  text = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  text = text.replace(/\*(.*?)\*/g,'<em>$1</em>');
+
+  text = text.replace(/^\d+\.\s(.+)/gm,'<li>$1</li>');
+  text = text.replace(/(<li>.*<\/li>)/gs,'<ol>$1</ol>');
+
+  text = text.replace(/^[\*\-]\s(.+)/gm,'<li>$1</li>');
+  text = text.replace(/(<li>.*<\/li>)/gs,'<ul>$1</ul>');
+
+  text = text.replace(/\n/g,'<br>');
+
+  return text;
+}
+</script>
+
+<script>
+let rawText = `{{ analysis|escapejs }}`;
+document.getElementById("analysisBox").innerHTML = formatText(rawText);
+</script>
 
         <br>
 

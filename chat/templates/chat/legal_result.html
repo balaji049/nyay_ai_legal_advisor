@@ -36,9 +36,48 @@ Back to Chat
 
 <h2>Generated Legal Document</h2>
 
-<div class="bubble assistant">
-{{ result|linebreaks }}
-</div>
+<div class="bubble assistant" id="legalResult"></div>
+<script>
+function formatText(text) {
+
+  // Headings
+  text = text.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+  text = text.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+  text = text.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+
+  // Bold + Italic
+  text = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  text = text.replace(/\*(.*?)\*/g,'<em>$1</em>');
+
+  // ---------- FIXED LIST HANDLING ----------
+
+  // Numbered lists (group properly)
+  text = text.replace(/(?:^\d+\.\s.*(?:\n|$))+?/gm, match => {
+    const items = match.trim().split("\n")
+      .map(line => `<li>${line.replace(/^\d+\.\s/, '')}</li>`)
+      .join("");
+    return `<ol>${items}</ol>`;
+  });
+
+  // Bullet lists (group properly)
+  text = text.replace(/(?:^[\*\-]\s.*(?:\n|$))+?/gm, match => {
+    const items = match.trim().split("\n")
+      .map(line => `<li>${line.replace(/^[\*\-]\s/, '')}</li>`)
+      .join("");
+    return `<ul>${items}</ul>`;
+  });
+
+  // Line breaks
+  text = text.replace(/\n/g,'<br>');
+
+  return text;
+}
+</script>
+
+<script>
+let text = `{{ result|escapejs }}`;
+document.getElementById("legalResult").innerHTML = formatText(text);
+</script>
 
 <br>
 

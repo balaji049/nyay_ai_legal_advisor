@@ -1,0 +1,75 @@
+[
+  { "code": "120B", "title": "Criminal Conspiracy", "description": "Agreement between two or more persons to commit an illegal act.", "punishment": "Same as abetment", "bailable": false },
+  { "code": "121", "title": "Waging War Against State", "description": "Waging or attempting war against the Government.", "punishment": "Death or life imprisonment", "bailable": false },
+  { "code": "124A", "title": "Sedition", "description": "Acts against the government established by law.", "punishment": "Life imprisonment", "bailable": false },
+  { "code": "141", "title": "Unlawful Assembly", "description": "Assembly of 5 or more persons with illegal intent.", "punishment": "6 months or fine", "bailable": true },
+  { "code": "147", "title": "Rioting", "description": "Violence by unlawful assembly.", "punishment": "2 years or fine", "bailable": true },
+  { "code": "148", "title": "Rioting with Weapons", "description": "Rioting with deadly weapons.", "punishment": "3 years", "bailable": false },
+  { "code": "149", "title": "Common Object", "description": "Offence by members of unlawful assembly.", "punishment": "Depends on offence", "bailable": false },
+  { "code": "186", "title": "Obstructing Public Servant", "description": "Blocking a public servant’s duty.", "punishment": "3 months", "bailable": true },
+  { "code": "188", "title": "Disobedience Order", "description": "Ignoring public servant order.", "punishment": "6 months", "bailable": true },
+  { "code": "268", "title": "Public Nuisance", "description": "Annoyance to public.", "punishment": "Fine", "bailable": true },
+
+  { "code": "299", "title": "Culpable Homicide", "description": "Causing death intentionally.", "punishment": "Life imprisonment", "bailable": false },
+  { "code": "300", "title": "Murder", "description": "Culpable homicide amounting to murder.", "punishment": "Death or life imprisonment", "bailable": false },
+  { "code": "302", "title": "Punishment for Murder", "description": "Punishment for murder.", "punishment": "Death or life + fine", "bailable": false },
+  { "code": "304", "title": "Culpable Homicide (Not Murder)", "description": "Without intention to murder.", "punishment": "Life imprisonment", "bailable": false },
+  { "code": "304A", "title": "Causing Death by Negligence", "description": "Death due to negligence.", "punishment": "2 years", "bailable": true },
+  { "code": "307", "title": "Attempt to Murder", "description": "Attempt to cause death.", "punishment": "10 years or life", "bailable": false },
+  { "code": "308", "title": "Attempt to Culpable Homicide", "description": "Attempt without full intent of murder.", "punishment": "3 years", "bailable": false },
+
+  { "code": "323", "title": "Hurt", "description": "Causing bodily pain.", "punishment": "1 year", "bailable": true },
+  { "code": "324", "title": "Hurt by Weapons", "description": "Hurt using dangerous weapons.", "punishment": "3 years", "bailable": false },
+  { "code": "325", "title": "Grievous Hurt", "description": "Severe injury.", "punishment": "7 years", "bailable": false },
+  { "code": "326", "title": "Grievous Hurt with Weapon", "description": "Serious injury with weapon.", "punishment": "Life or 10 years", "bailable": false },
+
+  { "code": "339", "title": "Wrongful Restraint", "description": "Blocking movement.", "punishment": "1 month", "bailable": true },
+  { "code": "340", "title": "Wrongful Confinement", "description": "Restricting person.", "punishment": "1 year", "bailable": true },
+  { "code": "341", "title": "Punishment Restraint", "description": "Penalty for restraint.", "punishment": "1 month", "bailable": true },
+  { "code": "342", "title": "Punishment Confinement", "description": "Penalty for confinement.", "punishment": "1 year", "bailable": true },
+
+  { "code": "351", "title": "Assault", "description": "Threat or attempt to use force.", "punishment": "3 months", "bailable": true },
+  { "code": "352", "title": "Assault without Provocation", "description": "Assault without reason.", "punishment": "3 months", "bailable": true },
+
+  { "code": "354", "title": "Outrage Modesty", "description": "Assault on woman.", "punishment": "5 years", "bailable": false },
+  { "code": "354A", "title": "Sexual Harassment", "description": "Unwelcome sexual acts.", "punishment": "3 years", "bailable": false },
+  { "code": "354B", "title": "Disrobing Woman", "description": "Forceful disrobing.", "punishment": "7 years", "bailable": false },
+
+  { "code": "375", "title": "Rape", "description": "Sexual assault.", "punishment": "Defined under law", "bailable": false },
+  { "code": "376", "title": "Punishment for Rape", "description": "Punishment for rape.", "punishment": "10 years to life", "bailable": false },
+
+  { "code": "378", "title": "Theft", "description": "Taking property dishonestly.", "punishment": "3 years", "bailable": true },
+  { "code": "379", "title": "Punishment Theft", "description": "Punishment for theft.", "punishment": "3 years", "bailable": true },
+
+  { "code": "390", "title": "Robbery", "description": "Theft with violence.", "punishment": "10 years", "bailable": false },
+  { "code": "392", "title": "Punishment Robbery", "description": "Punishment for robbery.", "punishment": "10 years", "bailable": false },
+
+  { "code": "395", "title": "Dacoity", "description": "Robbery by 5+ persons.", "punishment": "Life imprisonment", "bailable": false },
+
+  { "code": "403", "title": "Dishonest Misappropriation", "description": "Using property dishonestly.", "punishment": "2 years", "bailable": true },
+
+  { "code": "405", "title": "Criminal Breach of Trust", "description": "Misuse of entrusted property.", "punishment": "3 years", "bailable": true },
+
+  { "code": "415", "title": "Cheating", "description": "Deceiving a person.", "punishment": "1 year", "bailable": true },
+  { "code": "420", "title": "Cheating and Fraud", "description": "Cheating with dishonesty.", "punishment": "7 years", "bailable": false },
+
+  { "code": "425", "title": "Mischief", "description": "Damage to property.", "punishment": "3 months", "bailable": true },
+
+  { "code": "441", "title": "Criminal Trespass", "description": "Entering property unlawfully.", "punishment": "3 months", "bailable": true },
+
+  { "code": "463", "title": "Forgery", "description": "Creating false document.", "punishment": "2 years", "bailable": true },
+  { "code": "465", "title": "Punishment Forgery", "description": "Forgery punishment.", "punishment": "2 years", "bailable": true },
+
+  { "code": "468", "title": "Forgery for Cheating", "description": "Forgery for fraud.", "punishment": "7 years", "bailable": false },
+
+  { "code": "471", "title": "Using Fake Document", "description": "Using forged document.", "punishment": "Same as forgery", "bailable": false },
+
+  { "code": "499", "title": "Defamation", "description": "Harming reputation.", "punishment": "2 years", "bailable": true },
+
+  { "code": "503", "title": "Criminal Intimidation", "description": "Threatening harm.", "punishment": "2 years", "bailable": true },
+  { "code": "506", "title": "Punishment Intimidation", "description": "Punishment for threats.", "punishment": "2 years", "bailable": true },
+
+  { "code": "509", "title": "Insult Modesty", "description": "Insulting a woman's dignity.", "punishment": "3 years", "bailable": true },
+
+  { "code": "511", "title": "Attempt Offence", "description": "Attempt to commit offence.", "punishment": "Half of offence punishment", "bailable": false }
+]

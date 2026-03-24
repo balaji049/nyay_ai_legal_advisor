@@ -29,6 +29,7 @@ urlpatterns = [
     path("legal-generator/", views.generate_legal_document, name="legal_generator"),
     path("sections/", views.law_sections, name="law_sections"),
     path("cases/", views.my_cases, name="my_cases"),
+    path("download-pdf/", views.download_pdf, name="download_pdf"),
     path("cases/<int:case_id>/", views.case_detail, name="case_detail"),
     path("profile/", views.profile_page, name="profile"),
     path("doc-chat/upload/", views.upload_doc_chat, name="upload_doc_chat"),
