@@ -15,7 +15,15 @@
 ## Screenshots
 
 
-![Nyay AI Chat Interface](ADD_SCREENSHOT_URL_HERE)
+![Nyay AI Chat Interface]<img width="1906" height="968" alt="Image" src="https://github.com/user-attachments/assets/16cd9520-e35a-45ca-a3be-c2d43fd45009" />
+
+<img width="1891" height="916" alt="Image" src="https://github.com/user-attachments/assets/20c3eb25-c6ef-4dae-81f0-c0599704c3b7" />
+
+<img width="1905" height="917" alt="Image" src="https://github.com/user-attachments/assets/82cf728a-59e7-4778-a102-5c25e4376204" />
+
+<img width="1893" height="911" alt="Image" src="https://github.com/user-attachments/assets/4dfdc084-6dac-45f0-b7a1-76743062b89c" />
+
+<img width="1907" height="918" alt="Image" src="https://github.com/user-attachments/assets/ff62f15e-b65d-43db-9c04-3a5b976d96d8" />
 
 ---
 
