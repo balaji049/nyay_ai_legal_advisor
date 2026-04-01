@@ -1,177 +1,289 @@
-# ⚖️ NYAY – AI Legal Advisor for India
+# Nyay AI - Legal Advisor for India
 
-Ever tried Googling a legal question in India and ended up more confused than before? That's exactly why I built NYAY.
+> AI-powered legal assistant grounded in Indian law. Every response is constrained to the knowledge base or the uploaded document. Zero hallucinations by design.
 
-Most people can't afford a lawyer for every small doubt — *"Can my landlord do this?"*, *"What are my rights if I get fired?"*, *"Is this contract clause even legal?"*. NYAY gives you a place to ask those questions in plain language and actually get a useful answer.
+[![Python](https://img.shields.io/badge/Python-3.10-blue?style=flat-square)](https://python.org)
+[![Django](https://img.shields.io/badge/Django-4.x-green?style=flat-square)](https://djangoproject.com)
+[![Groq](https://img.shields.io/badge/Groq-LLaMA%203.3%2070B-orange?style=flat-square)](https://console.groq.com)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue?style=flat-square)](https://postgresql.org)
+[![Live](https://img.shields.io/badge/Live-Demo-brightgreen?style=flat-square)](https://nyay-ai-legal-advisor.onrender.com)
 
-It's built with Django and powered by Groq's LLaMA model. The big thing that makes it different from just prompting ChatGPT: **it remembers your conversation**. Every message is saved to a database and reloaded before each response, so the AI always has full context — no repeating yourself.
-
----
-
-## What it can do
-
-- Ask anything about Indian laws, rights, or legal procedures and get a clear explanation
-- Pick up right where you left off — conversations are saved and searchable
-- Works across multiple accounts, each with their own private history
-- Falls back across multiple Groq models automatically if one hits a rate limit
-- Comes with a clean dark/light mode UI and typing indicators so it feels like a real chat
+**[Live Demo](https://nyay-ai-legal-advisor.onrender.com)** | **[LinkedIn](https://linkedin.com/in/balaji-bhairwad)** | **[GitHub](https://github.com/balaji049)**
 
 ---
 
-## Tech I used
+## Screenshots
 
-| | |
-|---|---|
-| Backend | Django (Python 3.10) |
-| AI | Groq API — LLaMA 3.3 70B primary, LLaMA 3.1 8B + Gemma 2 9B as fallbacks |
-| Database | SQLite via Django ORM |
-| Frontend | Plain HTML, CSS, JavaScript |
-| Auth | Django's built-in authentication |
-| Config | python-dotenv |
+
+![Nyay AI Chat Interface](ADD_SCREENSHOT_URL_HERE)
 
 ---
 
-## How it works under the hood
+## What this project does
 
-Nothing fancy, but it works really well:
+Nyay AI is a full-stack legal assistant that answers questions about Indian law
+in plain language. It covers IPC sections, CrPC procedures, tenant rights,
+employment law, and contract review.
+
+Most people cannot afford a lawyer for everyday legal doubts. Nyay fills that
+gap by giving clear, grounded answers without hallucinating legal citations
+that do not exist.
+
+The core design decision: the AI is not allowed to answer from general
+knowledge alone. Every response is constrained to the legal knowledge base
+or the specific document the user uploads. If the answer is not there, the
+system says so.
+
+---
+
+## Two modes of operation
+
+### 1. General legal chat
+
+Ask questions about Indian law in plain language. The system loads the full
+conversation history from PostgreSQL before every response, so context
+carries across multiple sessions. You never have to repeat yourself.
+
+Covers:
+- Indian Penal Code (IPC) sections and offences
+- Code of Criminal Procedure (CrPC)
+- Tenant rights and rental disputes
+- Employment law and wrongful termination
+- Contract review and clause explanation
+- FIR generation with correct section references
+- IPC section lookup by number or keyword
+- PDF export of any consultation
+
+### 2. Document-aware chat (RAG)
+
+Upload a contract, legal notice, or any PDF. The system extracts the content
+using PyMuPDF and constrains the AI to answer strictly from that document.
+General knowledge is explicitly blocked in the prompt.
+
+Use this for:
+- Understanding what a rental agreement actually says
+- Checking if a job offer letter has unusual clauses
+- Reviewing a legal notice before responding to it
+
+The prompt injection for document mode:
+
 ```
-User sends a message
-      ↓
-Django loads the full conversation history from SQLite
-      ↓
-Entire history + new message sent to Groq API
-      ↓
-AI responds with full context of everything said before
-      ↓
-New messages saved back to SQLite
-      ↓
-Response shown in browser
+Answer only using the content from the document provided below.
+Do not use any general knowledge. If the answer is not in the
+document, say: "I could not find this in the document."
 ```
 
-The context memory is the core feature. Without it, the AI treats every message as a fresh question. With it, you can have a real back-and-forth like you would with an actual advisor.
+This matters in a legal context. A hallucinated IPC section number or a
+fabricated contract clause can cause real harm.
+
+---
+
+## Engineering decisions
+
+### Model fallback chain
+
+The primary model is LLaMA 3.3 70B via Groq API. If it hits a rate limit,
+the system silently falls back to LLaMA 3.1 8B, then Gemma 2 9B. The user
+never sees an error. This was a deliberate production decision built into
+the Groq client wrapper.
+
+```
+Request arrives
+      |
+      v
+Try LLaMA 3.3 70B
+      |
+   success? --> return response
+      |
+   rate limit?
+      |
+      v
+Try LLaMA 3.1 8B
+      |
+   success? --> return response
+      |
+   rate limit?
+      |
+      v
+Try Gemma 2 9B --> return response
+```
+
+### Persistent conversation memory
+
+The full conversation history is loaded from PostgreSQL before every API
+call. Most demo chatbots reset on every message. Legal consultations span
+multiple sessions. Nyay keeps the entire thread intact.
+
+### SQLite locally, PostgreSQL in production
+
+Local development uses Django's default SQLite for zero-setup. Production
+on Render uses PostgreSQL. The switch is handled entirely via the
+DATABASE_URL environment variable and dj-database-url, so no code changes
+are needed between environments.
+
+---
+
+## Tech stack
+
+| Layer          | Technology                                           |
+|----------------|------------------------------------------------------|
+| Backend        | Python 3.10, Django                                  |
+| AI inference   | Groq API (LLaMA 3.3 70B + LLaMA 3.1 8B + Gemma 2 9B)|
+| Document RAG   | PyMuPDF (text extraction from uploaded PDFs)         |
+| Database       | PostgreSQL (production), SQLite (local dev)          |
+| Frontend       | HTML, CSS, JavaScript                                |
+| Auth           | Django built-in authentication                       |
+| Deployment     | Render                                               |
 
 ---
 
 ## Project structure
+
 ```
-nyay-django/
-│
-├── manage.py                  ← Django's entry point
-├── requirements.txt
-├── .env                       ← your API keys go here (never commit this)
-├── db.sqlite3                 ← auto-created when you migrate
-│
-├── nyay_project/
-│   ├── settings.py            ← all config lives here
-│   ├── urls.py                ← master URL router
-│   └── wsgi.py
-│
-└── chat/
-    ├── models.py              ← database tables as Python classes
-    ├── views.py               ← all the route logic
-    ├── urls.py
-    ├── admin.py
-    ├── migrations/
-    └── templates/chat/
-        ├── index.html         ← main chat UI
-        ├── login.html
-        └── signup.html
+nyay_ai_legal_advisor/
+|
++-- manage.py
++-- requirements.txt
++-- .env                         # never commit this
++-- .env.example                 # safe to commit, no real keys
+|
++-- nyay_project/
+|   +-- settings.py
+|   +-- urls.py
+|   +-- wsgi.py
+|
++-- chat/
+    +-- models.py                # Conversation and Message models
+    +-- views.py                 # Chat logic, Groq API calls, fallback chain
+    +-- urls.py
+    +-- templates/chat/
+        +-- index.html           # Main chat UI
+        +-- login.html
+        +-- signup.html
 ```
 
 ---
 
-## Running it locally
+## How to run locally
 
-### 1. Install Python 3.10
-Grab it from [python.org](https://www.python.org/downloads/release/python-3100/). On Windows, make sure you check **Add Python to PATH** during setup.
-
-### 2. Windows only — allow scripts to run
-Open PowerShell and run this once:
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-### 3. Clone the repo
 ```bash
+# Clone
 git clone https://github.com/balaji049/nyay_ai_legal_advisor.git
 cd nyay_ai_legal_advisor
-```
 
-### 4. Set up a virtual environment
-```bash
+# Create and activate virtual environment
 python -m venv venv
+source venv/bin/activate          # macOS and Linux
+.\venv\Scripts\activate           # Windows PowerShell
 
-# Windows
-.\venv\Scripts\activate
-
-# macOS / Linux
-source venv/bin/activate
-```
-Once active, you'll see `(venv)` at the start of your terminal line.
-
-### 5. Upgrade pip and install dependencies
-```bash
-python -m pip install --upgrade pip
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 6. Get your Groq API key
-1. Go to [console.groq.com](https://console.groq.com) and sign up
-2. Click **API Keys → Create API Key**
-3. Copy it immediately — it starts with `gsk_...` and you only see it once
+Create a `.env` file in the root folder:
 
-### 7. Create your `.env` file
-Make a file called `.env` in the root folder (same level as `manage.py`):
-```env
+```
 SECRET_KEY=your_django_secret_key_here
 GROQ_API_KEY=gsk_your_groq_key_here
 ```
-This file is already in `.gitignore` — don't remove it from there.
 
-### 8. Set up the database
+For local dev, SQLite is used automatically. No DATABASE_URL needed.
+
 ```bash
+# Run migrations
 python manage.py makemigrations chat
 python manage.py migrate
-```
-`makemigrations` reads your models and creates migration files. `migrate` actually builds the tables in `db.sqlite3`.
 
-### 9. Start the server
-```bash
+# Start the server
 python manage.py runserver
 ```
-Then open **http://127.0.0.1:8000** in your browser. (Django uses port 8000, not 5000.)
+
+Open **http://127.0.0.1:8000** in your browser.
 
 ---
 
-## Admin panel
+## Getting a Groq API key
 
-Want to poke around the database through a UI? Create a superuser:
-```bash
-python manage.py createsuperuser
+1. Go to [console.groq.com](https://console.groq.com) and sign up (free)
+2. Click API Keys, then Create API Key
+3. Copy the key immediately. It starts with `gsk_` and is shown only once
+4. Paste it into your `.env` file
+
+---
+
+## Deploying to production (Render)
+
+1. Push the repo to GitHub
+2. Create a new Web Service on Render, connect the repo
+3. Set build command: `pip install -r requirements.txt`
+4. Set start command: `gunicorn nyay_project.wsgi`
+5. Add environment variables in Render dashboard:
+
 ```
-Then visit `/admin/` while the server is running.
+SECRET_KEY=your_production_secret_key
+GROQ_API_KEY=gsk_your_groq_key
+DATABASE_URL=postgresql://...      # from Render PostgreSQL add-on
+```
+
+Render's PostgreSQL add-on provides the DATABASE_URL automatically when
+you attach it to the service.
 
 ---
 
-## What I want to add next
+## Request flow
 
-- 🎤 Voice input so you can just speak your question
-- 📄 Upload a document and have the AI explain what it means
-- 🌍 Hindi, Telugu, Tamil support — most people asking legal questions aren't thinking in English
-- 📍 A map to find nearby lawyers if you need to take things further
-- 📱 A proper mobile app
+```
+User message
+      |
+      v
+Load full conversation history from PostgreSQL
+      |
+      v
+Document uploaded? -- YES --> PyMuPDF extracts text --> inject as context
+                  -- NO  --> use general legal knowledge prompt
+      |
+      v
+Call Groq API (LLaMA 3.3 70B)
+      |
+      v
+Rate limit hit? -- YES --> LLaMA 3.1 8B --> Gemma 2 9B
+               -- NO  --> use response
+      |
+      v
+Save new messages to PostgreSQL
+      |
+      v
+Render in chat UI
+```
+
+---
+
+## What I want to improve
+
+- Hindi, Telugu, and Tamil language support. Most people with legal questions
+  in Telangana are not thinking in English.
+- Source highlighting: show the exact sentence in the uploaded document that
+  the answer came from.
+- Voice input for accessibility.
+- Find a nearby advocate using location and Bar Council data.
 
 ---
 
 ## Disclaimer
 
-NYAY gives you **general legal information**, not legal advice. It's meant to help you understand your situation, not replace a qualified advocate. For anything serious, please consult a lawyer registered with the Bar Council of India.
+Nyay AI provides general legal information, not legal advice. For anything
+serious, consult a lawyer registered with the Bar Council of India.
 
 ---
 
-## About
+## Author
 
-Built by **Balaji Bhairwad** as part of my B.Tech in AI & ML.  
-GitHub: [github.com/balaji049](https://github.com/balaji049)
+**Balaji Bhairwad**
+B.Tech, Computer Science and Engineering (AI and ML)
+Malla Reddy Engineering College, Hyderabad
 
-If this helped you, a ⭐ on the repo would mean a lot!
+[LinkedIn](https://linkedin.com/in/balaji-bhairwad) | [GitHub](https://github.com/balaji049) | [Live Demo](https://nyay-ai-legal-advisor.onrender.com)
+
+---
+
+*Built because most people cannot afford a lawyer for every small legal doubt.*
